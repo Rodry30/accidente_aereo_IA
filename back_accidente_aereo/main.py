@@ -11,10 +11,7 @@ app = FastAPI()
 # CORS para que Angular pueda consumirlo
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[
-        "http://localhost:4200",
-        "http://localhost:4201",
-    ],
+    allow_origins=["*"],
     allow_methods=["POST"],
     allow_headers=["*"],
 )
