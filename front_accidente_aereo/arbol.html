@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>DiabExpert — Árbol de Decisión</title>
+  <link rel="stylesheet" href="css/styles.css"/>
+  <style>
+    /* Estilos del contenedor del árbol */
+    .tree-wrapper {
+      position: relative;
+      background-color: #FFFFFF;
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius);
+      height: 600px;
+      overflow: hidden;
+      box-shadow: var(--shadow);
+    }
+
+    .tree-canvas {
+      width: 100%;
+      height: 100%;
+      cursor: grab;
+    }
+
+    .tree-canvas:active {
+      cursor: grabbing;
+    }
+
+    /* Controles de zoom */
+    .zoom-controls {
+      position: absolute;
+      bottom: 20px;
+      right: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      z-index: 10;
+    }
+
+    .zoom-btn {
+      width: 40px;
+      height: 40px;
+      background-color: #FFFFFF;
+      border: 1px solid var(--color-border);
+      border-radius: 50%;
+      font-size: 18px;
+      font-weight: bold;
+      color: var(--color-primary);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+      transition: var(--transition);
+    }
+
+    .zoom-btn:hover {
+      background-color: var(--color-bg);
+      transform: scale(1.05);
+    }
+
+    /* Leyenda visual */
+    .legend-card {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 16px;
+      padding: 16px 24px;
+      background-color: var(--color-surface);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius);
+      margin-bottom: 20px;
+      box-shadow: var(--shadow);
+    }
+
+    .legend-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 13px;
+      color: var(--color-text);
+    }
+
+    .legend-shape {
+      width: 16px;
+      height: 16px;
+      border-radius: 4px;
+    }
+
+    .legend-shape.condition {
+      background-color: #1E3A5F;
+      clip-path: polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%);
+    }
+
+    .legend-shape.symptom {
+      background-color: #2563EB;
+      border-radius: 2px;
+    }
+
+    .legend-shape.diagnosis-yellow { background-color: #F59E0B; border-radius: 50%; }
+    .legend-shape.diagnosis-red { background-color: #EF4444; border-radius: 50%; }
+    .legend-shape.diagnosis-darkred { background-color: #991B1B; border-radius: 50%; }
+    .legend-shape.diagnosis-purple { background-color: #7C3AED; border-radius: 50%; }
+    .legend-shape.diagnosis-blue { background-color: #2563EB; border-radius: 50%; }
+
+    /* Sidebar interactivo de diagnóstico */
+    .tree-layout-wrapper {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 24px;
+      transition: var(--transition);
+    }
+
+    .tree-layout-wrapper.with-sidebar {
+      grid-template-columns: 1fr 340px;
+    }
+
+    .details-sidebar {
+      background-color: var(--color-surface);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius);
+      padding: 24px;
+      box-shadow: var(--shadow);
+      display: none;
+      flex-direction: column;
+      animation: fadeInRight 0.3s ease-out both;
+    }
+
+    .details-sidebar.visible {
+      display: flex;
+    }
+
+    @keyframes fadeInRight {
+      from { opacity: 0; transform: translateX(20px); }
+      to { opacity: 1; transform: translateX(0); }
+    }
+
+    /* SVG connections and highlighting */
+    .link {
+      fill: none;
+      stroke: #CBD5E1;
+      stroke-width: 2px;
+      transition: stroke 0.3s, stroke-width 0.3s;
+    }
+
+    .link.highlighted {
+      stroke: var(--color-primary-light);
+      stroke-width: 4px;
+    }
+
+    .node {
+      cursor: pointer;
+    }
+
+    .node text {
+      font-size: 11px;
+      font-weight: 500;
+      fill: var(--color-text);
+      user-select: none;
+      pointer-events: none;
+    }
+
+    .node rect, .node circle, .node polygon {
+      transition: filter 0.2s, transform 0.2s;
+    }
+
+    .node:hover rect, .node:hover circle, .node:hover polygon {
+      filter: brightness(1.1) drop-shadow(0 4px 8px rgba(0,0,0,0.15));
+    }
+
+    .node.highlighted rect, .node.highlighted circle, .node.highlighted polygon {
+      stroke: var(--color-primary-light);
+      stroke-width: 3px;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Navbar -->
+  <nav class="navbar">
+    <a href="index.html" class="nav-logo">
+      <svg viewBox="0 0 24 24">
+        <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-3H8v-2h3V8h2v3h3v2h-3v3z"/>
+      </svg>
+      DiabExpert
+    </a>
+    <button class="nav-toggle" id="navToggle">☰</button>
+    <ul class="nav-links" id="navLinks">
+      <li><a href="index.html">Base de Conocimiento</a></li>
+      <li><a href="arbol.html" class="active">Árbol de Decisión</a></li>
+      <li><a href="test.html">Test Diagnóstico</a></li>
+      <li><a href="accidente.html">Accidente Aéreo</a></li>
+    </ul>
+  </nav>
+
+  <!-- Container -->
+  <main class="container animated">
+    <header style="margin-bottom: 24px;">
+      <span class="badge badge-primary">Visualización Interactiva</span>
+      <h1 style="margin-top: 10px;">Árbol de Decisión Clínico</h1>
+      <p class="subtitle">Explora el flujo lógico del sistema experto. Arrastra el lienzo para mover el árbol y usa el scroll o los botones para hacer zoom. Haz clic en un diagnóstico para ver su información detallada.</p>
+    </header>
+
+    <!-- Leyenda -->
+    <div class="legend-card">
+      <div class="legend-item"><div class="legend-shape condition"></div> <span>Pregunta / Condición</span></div>
+      <div class="legend-item"><div class="legend-shape symptom"></div> <span>Síntoma evaluado</span></div>
+      <div class="legend-item"><div class="legend-shape diagnosis-yellow"></div> <span>Prediabetes</span></div>
+      <div class="legend-item"><div class="legend-shape diagnosis-red"></div> <span>Diabetes Tipo 1 / 2</span></div>
+      <div class="legend-item"><div class="legend-shape diagnosis-darkred"></div> <span>Complicación Aguda (CAD/EHH)</span></div>
+      <div class="legend-item"><div class="legend-shape diagnosis-purple"></div> <span>Complicación Crónica</span></div>
+    </div>
+
+    <!-- Layout Wrapper: Contiene el canvas del árbol y el panel lateral opcional -->
+    <div class="tree-layout-wrapper" id="layoutWrapper">
+      <!-- Lienzo del árbol -->
+      <div class="tree-wrapper">
+        <!-- Controles de Zoom flotantes -->
+        <div class="zoom-controls">
+          <button class="zoom-btn" onclick="zoomIn()">+</button>
+          <button class="zoom-btn" onclick="zoomOut()">-</button>
+          <button class="zoom-btn" onclick="resetZoom()">⟲</button>
+        </div>
+        
+        <svg class="tree-canvas" id="treeSvg">
+          <g id="treeGroup"></g>
+        </svg>
+      </div>
+
+      <!-- Sidebar interactivo de detalles -->
+      <div class="details-sidebar" id="detailsSidebar">
+        <h3 id="sideTitle" style="font-size: 20px; font-weight: 700; margin-bottom: 8px;">Diagnóstico</h3>
+        <div style="margin-bottom: 12px;">
+          <span class="badge" id="sideBadgeType">Tipo</span>
+          <span class="badge" id="sideBadgeSeverity" style="margin-left: 6px;">Severidad</span>
+        </div>
+        <p id="sideDesc" style="font-size: 13.5px; color: var(--color-text); margin-bottom: 16px; line-height: 1.6;"></p>
+        
+        <div style="margin-bottom: 20px; border-top: 1px solid var(--color-border); padding-top: 16px;">
+          <h4 style="font-size: 11px; text-transform: uppercase; color: var(--color-text-muted); margin-bottom: 8px;">Recomendación:</h4>
+          <p id="sideRec" style="font-size: 13px; font-weight: 500; color: #1E3A5F; line-height: 1.5;"></p>
+        </div>
+
+        <div style="margin-top: auto; display: flex; flex-direction: column; gap: 8px;">
+          <a id="sideKnowledgeLink" href="index.html" class="btn btn-primary" style="font-size: 13px; padding: 10px;">
+            Ver reglas completas
+          </a>
+          <button class="btn btn-secondary" onclick="closeSidebar()" style="font-size: 13px; padding: 10px;">
+            Cerrar
+          </button>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <!-- Disclaimer Footer -->
+  <footer class="footer-disclaimer">
+    <p><strong>⚕️ AVISO MÉDICO IMPORTANTE:</strong> Este sistema es una herramienta educativa desarrollada con fines académicos. NO constituye diagnóstico médico ni reemplaza la consulta con un profesional de la salud. Ante cualquier síntoma, consulte a su médico. En caso de emergencia, llame a los servicios de emergencias locales.</p>
+    <p style="margin-top: 10px; opacity: 0.8;">Fuentes clínicas: WHO HEARTS-D 2020 | ADA Standards of Care 2023 | Manual Merck</p>
+  </footer>
+
+  <script src="js/expert.js"></script>
+  <script src="js/tree.js"></script>
+  <script>
+    // Menú hamburguesa responsive
+    const navToggle = document.getElementById('navToggle');
+    const navLinks = document.getElementById('navLinks');
+    navToggle.addEventListener('click', () => {
+      navLinks.classList.toggle('open');
+    });
+  </script>
+</body>
+</html>

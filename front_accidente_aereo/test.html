@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>DiabExpert — Test Diagnóstico</title>
+  <link rel="stylesheet" href="css/styles.css"/>
+  <style>
+    /* Estilos locales para el test */
+    .warning-banner {
+      background-color: #FEF3C7;
+      border: 1px solid #F59E0B;
+      border-radius: var(--radius);
+      padding: 18px 24px;
+      color: #92400E;
+      font-size: 14px;
+      margin-bottom: 24px;
+      display: flex;
+      gap: 12px;
+      align-items: flex-start;
+    }
+
+    .emergency-banner {
+      background-color: #FEE2E2;
+      border: 2px solid #DC2626;
+      border-radius: var(--radius);
+      padding: 20px 24px;
+      color: #991B1B;
+      font-size: 15px;
+      font-weight: 500;
+      margin-bottom: 24px;
+      animation: pulseAlert 2s infinite ease-in-out;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    @keyframes pulseAlert {
+      0% { box-shadow: 0 0 0 0 rgba(220, 38, 38, 0.4); }
+      70% { box-shadow: 0 0 0 10px rgba(220, 38, 38, 0); }
+      100% { box-shadow: 0 0 0 0 rgba(220, 38, 38, 0); }
+    }
+
+    .group-title {
+      font-size: 16px;
+      font-weight: 700;
+      color: var(--color-primary);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 16px;
+      border-bottom: 2px solid var(--color-border);
+      padding-bottom: 8px;
+    }
+
+    .checkbox-card {
+      background-color: #FFFFFF;
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-sm);
+      padding: 14px 18px;
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+      cursor: pointer;
+      user-select: none;
+      transition: var(--transition);
+    }
+
+    .checkbox-card:hover {
+      border-color: var(--color-primary-light);
+      background-color: #F8FAFC;
+    }
+
+    .checkbox-card.selected {
+      border-color: var(--color-primary-light);
+      background-color: #EFF6FF;
+    }
+
+    .checkbox-card input[type="checkbox"] {
+      width: 18px;
+      height: 18px;
+      margin-top: 3px;
+      accent-color: var(--color-primary-light);
+      cursor: pointer;
+    }
+
+    .checkbox-card .checkbox-label {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+
+    .checkbox-card .sym-name {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--color-text);
+    }
+
+    .checkbox-card .sym-desc {
+      font-size: 11.5px;
+      color: var(--color-text-muted);
+    }
+
+    /* Result cards */
+    .result-section {
+      display: none;
+      margin-top: 40px;
+    }
+
+    .result-section.visible {
+      display: block;
+      animation: fadeInUp 0.5s ease-out both;
+    }
+
+    .result-diagnosis-card {
+      border-left: 6px solid var(--color-primary);
+      padding: 24px;
+      background-color: #FFFFFF;
+      border-radius: var(--radius-sm);
+      box-shadow: var(--shadow);
+      margin-bottom: 20px;
+    }
+
+    /* Spinner */
+    .spinner-wrap {
+      display: none;
+      justify-content: center;
+      padding: 30px 0;
+    }
+    
+    .spinner-wrap.visible {
+      display: flex;
+    }
+
+    .spinner {
+      width: 40px;
+      height: 40px;
+      border: 4px solid var(--color-border);
+      border-top-color: var(--color-primary-light);
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Navbar -->
+  <nav class="navbar">
+    <a href="index.html" class="nav-logo">
+      <svg viewBox="0 0 24 24">
+        <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-3H8v-2h3V8h2v3h3v2h-3v3z"/>
+      </svg>
+      DiabExpert
+    </a>
+    <button class="nav-toggle" id="navToggle">☰</button>
+    <ul class="nav-links" id="navLinks">
+      <li><a href="index.html">Base de Conocimiento</a></li>
+      <li><a href="arbol.html">Árbol de Decisión</a></li>
+      <li><a href="test.html" class="active">Test Diagnóstico</a></li>
+      <li><a href="accidente.html">Accidente Aéreo</a></li>
+    </ul>
+  </nav>
+
+  <!-- Container -->
+  <main class="container animated">
+    <header style="margin-bottom: 30px;">
+      <span class="badge badge-primary">Análisis Clínico en Tiempo Real</span>
+      <h1 style="margin-top: 10px;">Test del Sistema Experto</h1>
+      <p class="subtitle">Selecciona los síntomas que presentas en el cuestionario y el motor de inferencia Prolog deducirá el posible diagnóstico basado en reglas.</p>
+    </header>
+
+    <!-- Advertencia médica -->
+    <div class="warning-banner">
+      <div style="font-size: 20px;">⚠️</div>
+      <div>
+        <strong>AVISO MÉDICO IMPORTANTE:</strong> Esta herramienta es de carácter educativo y académico.
+        No constituye un diagnóstico oficial ni reemplaza a un profesional de la salud. En caso de presentar síntomas graves o de emergencia, comuníquese con el 911 o acuda a urgencias de inmediato.
+      </div>
+    </div>
+
+    <!-- Formulario de Síntomas -->
+    <div class="card" id="testFormCard">
+      <h2 style="font-size: 24px; margin-bottom: 20px; border-bottom: 1px solid var(--color-border); padding-bottom: 12px;">Cuestionario de Síntomas</h2>
+
+      <!-- Grupo 1 -->
+      <div style="margin-bottom: 30px;">
+        <h3 class="group-title">Grupo 1 — Síntomas Clásicos</h3>
+        <div class="grid-2" id="group-1"></div>
+      </div>
+
+      <!-- Grupo 2 -->
+      <div style="margin-bottom: 30px;">
+        <h3 class="group-title">Grupo 2 — Síntomas de Alarma</h3>
+        <div class="grid-2" id="group-2"></div>
+      </div>
+
+      <!-- Grupo 3 -->
+      <div style="margin-bottom: 30px;">
+        <h3 class="group-title">Grupo 3 — Síntomas Agudos / Emergencia</h3>
+        <div class="grid-2" id="group-3"></div>
+      </div>
+
+      <!-- Grupo 4 -->
+      <div style="margin-bottom: 30px;">
+        <h3 class="group-title">Grupo 4 — Complicaciones Crónicas</h3>
+        <div class="grid-2" id="group-4"></div>
+      </div>
+
+      <!-- Grupo 5 -->
+      <div style="margin-bottom: 30px;">
+        <h3 class="group-title">Grupo 5 — Factores de Riesgo / Generales</h3>
+        <div class="grid-2" id="group-5"></div>
+      </div>
+
+      <!-- Acciones del Formulario -->
+      <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 16px; border-top: 1px solid var(--color-border); padding-top: 24px; margin-top: 20px;">
+        <div id="counterLabel" style="font-size: 14px; font-weight: 500; color: var(--color-text-muted);">
+          0 síntomas seleccionados
+        </div>
+        <div style="display: flex; gap: 12px;">
+          <button class="btn btn-secondary" onclick="clearSelection()">Limpiar Selección</button>
+          <button class="btn btn-primary" id="btnAnalyze" onclick="analyzeSymptoms()" disabled>Analizar Síntomas ➔</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Spinner cargando -->
+    <div class="spinner-wrap" id="loadingSpinner">
+      <div class="spinner"></div>
+    </div>
+
+    <!-- Alertas y Resultados -->
+    <div class="result-section" id="resultsSection">
+      
+      <!-- Alerta de Emergencia Crítica -->
+      <div class="emergency-banner" id="emergencyBanner" style="display: none;">
+        <div style="display: flex; align-items: center; gap: 10px; font-size: 18px; font-weight: 700;">
+          🚨 POSIBLE EMERGENCIA MÉDICA DETECTADA
+        </div>
+        <div style="font-size: 13.5px; opacity: 0.95;">
+          El sistema experto ha detectado patrones compatibles con una complicación diabética aguda grave (como Cetoacidosis Diabética o Estado Hiperosmolar). Se recomienda acudir de inmediato al hospital o contactar con urgencias.
+        </div>
+      </div>
+
+      <!-- Resultados del Diagnóstico -->
+      <div class="card">
+        <h2 style="font-size: 24px; margin-bottom: 20px;">Resultado del Análisis Inferencia Prolog</h2>
+        <p style="font-size: 14px; color: var(--color-text-muted); margin-bottom: 20px;">
+          El motor experto analizó los síntomas ingresados y dedujo lo siguiente:
+        </p>
+
+        <!-- Tarjetas dinámicas de diagnósticos -->
+        <div id="diagnosesResultsList"></div>
+
+        <!-- No se encontraron diagnósticos -->
+        <div id="noDiagnosisMsg" style="display: none; padding: 24px; background-color: #F8FAFC; border: 1px solid var(--color-border); border-radius: var(--radius-sm); text-align: center;">
+          <div style="font-size: 32px; margin-bottom: 10px;">ℹ️</div>
+          <h4 style="color: var(--color-primary); font-size: 16px; margin-bottom: 4px;">Sin Diagnóstico Claro</h4>
+          <p style="font-size: 13px; color: var(--color-text-muted);">
+            No se encontró una combinación de síntomas que active alguna de las reglas lógicas en la base de conocimientos. Si sus molestias persisten, consulte a un profesional.
+          </p>
+        </div>
+
+        <!-- Footer del resultado -->
+        <div style="margin-top: 30px; border-top: 1px solid var(--color-border); padding-top: 24px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 16px;">
+          <div>
+            <h4 style="font-size: 11px; text-transform: uppercase; color: var(--color-text-muted); margin-bottom: 4px;">Análisis Realizado:</h4>
+            <div id="symptomsAnalyzedList" style="font-size: 12px; color: var(--color-text); font-weight: 500;"></div>
+          </div>
+          <div style="display: flex; gap: 12px;">
+            <button class="btn btn-secondary" onclick="resetTest()">Realizar Otro Test</button>
+            <a href="arbol.html" class="btn btn-primary">Ver Árbol de Decisión</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <!-- Disclaimer Footer -->
+  <footer class="footer-disclaimer">
+    <p><strong>⚕️ AVISO MÉDICO IMPORTANTE:</strong> Este sistema es una herramienta educativa desarrollada con fines académicos. NO constituye diagnóstico médico ni reemplaza la consulta con un profesional de la salud. Ante cualquier síntoma, consulte a su médico. En caso de emergencia, llame a los servicios de emergencias locales.</p>
+    <p style="margin-top: 10px; opacity: 0.8;">Fuentes clínicas: WHO HEARTS-D 2020 | ADA Standards of Care 2023 | Manual Merck</p>
+  </footer>
+
+  <script src="js/expert.js"></script>
+  <script src="js/test.js"></script>
+  <script>
+    // Menú hamburguesa responsive
+    const navToggle = document.getElementById('navToggle');
+    const navLinks = document.getElementById('navLinks');
+    navToggle.addEventListener('click', () => {
+      navLinks.classList.toggle('open');
+    });
+  </script>
+</body>
+</html>

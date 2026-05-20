@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Predictor de Supervivencia de Accidente Aéreo</title>
+  <link rel="stylesheet" href="css/styles.css"/>
+  <style>
+    /* Estilos específicos para la barra de probabilidad */
+    .prob-bar-wrap {
+      margin-top: 18px;
+      background: var(--color-border);
+      border-radius: 100px;
+      height: 8px;
+      overflow: hidden;
+    }
+    
+    .prob-bar {
+      height: 100%;
+      border-radius: 100px;
+      transition: width 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    
+    .result-alert {
+      display: none;
+      margin-top: 28px;
+      border-radius: var(--radius);
+      padding: 24px 30px;
+      border: 1px solid;
+      animation: fadeInUp 0.4s ease both;
+    }
+
+    .result-alert.visible {
+      display: block;
+    }
+
+    .result-alert.survive {
+      background: rgba(16, 185, 129, 0.08);
+      border-color: rgba(16, 185, 129, 0.3);
+    }
+
+    .result-alert.die {
+      background: rgba(239, 68, 68, 0.08);
+      border-color: rgba(239, 68, 68, 0.3);
+    }
+
+    .result-alert .icon {
+      font-size: 40px;
+      margin-bottom: 8px;
+      display: block;
+    }
+
+    .result-alert .title {
+      font-family: var(--font-display);
+      font-size: 28px;
+      margin-bottom: 8px;
+    }
+
+    .result-alert.survive .title { color: var(--color-accent); }
+    .result-alert.die .title { color: var(--color-danger); }
+
+    .result-alert.survive .prob-bar { background-color: var(--color-accent); }
+    .result-alert.die .prob-bar { background-color: var(--color-danger); }
+
+    .error-alert {
+      display: none;
+      margin-top: 20px;
+      padding: 14px 18px;
+      background: rgba(239, 68, 68, 0.08);
+      border: 1px solid rgba(239, 68, 68, 0.25);
+      border-radius: var(--radius-sm);
+      color: var(--color-danger);
+      font-size: 14px;
+    }
+
+    .error-alert.visible {
+      display: block;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Navbar -->
+  <nav class="navbar">
+    <a href="index.html" class="nav-logo">
+      <svg viewBox="0 0 24 24">
+        <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-3H8v-2h3V8h2v3h3v2h-3v3z"/>
+      </svg>
+      DiabExpert
+    </a>
+    <button class="nav-toggle" id="navToggle">☰</button>
+    <ul class="nav-links" id="navLinks">
+      <li><a href="index.html">Base de Conocimiento</a></li>
+      <li><a href="arbol.html">Árbol de Decisión</a></li>
+      <li><a href="test.html">Test Diagnóstico</a></li>
+      <li><a href="accidente.html" class="active">Accidente Aéreo</a></li>
+    </ul>
+  </nav>
+
+  <!-- Container -->
+  <main class="container animated">
+    <header style="margin-bottom: 30px;">
+      <span class="badge badge-primary">Modelo Predictivo Keras — TensorFlow</span>
+      <h1 style="margin-top: 10px;">Predictor de Supervivencia</h1>
+      <p class="subtitle">Ingresa las características del pasajero y el modelo de red neuronal estimará la probabilidad de supervivencia en caso de accidente.</p>
+    </header>
+
+    <!-- Formulario Predictor -->
+    <div class="card">
+      <h2 style="font-size: 24px; margin-bottom: 20px; border-bottom: 1px solid var(--color-border); padding-bottom: 12px;">Datos del Pasajero</h2>
+      
+      <!-- Sección 1: Datos Personales -->
+      <div style="margin-bottom: 24px;">
+        <h3 style="font-size: 14px; font-weight: 700; color: var(--color-text-muted); text-transform: uppercase; margin-bottom: 14px; letter-spacing: 0.5px;">1. Datos Personales</h3>
+        <div class="grid-2">
+          <div class="form-group">
+            <label for="sex">Sexo</label>
+            <select id="sex" class="form-control">
+              <option value="">— Selecciona —</option>
+              <option value="male">Masculino (Male)</option>
+              <option value="female">Femenino (Female)</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="age">Edad</label>
+            <input id="age" type="number" min="0" max="100" class="form-control" placeholder="Ej: 28"/>
+          </div>
+        </div>
+      </div>
+
+      <!-- Sección 2: Datos del Boleto -->
+      <div style="margin-bottom: 24px; border-top: 1px solid var(--color-border); padding-top: 20px;">
+        <h3 style="font-size: 14px; font-weight: 700; color: var(--color-text-muted); text-transform: uppercase; margin-bottom: 14px; letter-spacing: 0.5px;">2. Detalles del Boleto</h3>
+        <div class="grid-2">
+          <div class="form-group">
+            <label for="clase">Clase</label>
+            <select id="clase" class="form-control">
+              <option value="">— Selecciona —</option>
+              <option value="First">Primera Clase (First)</option>
+              <option value="Second">Segunda Clase (Second)</option>
+              <option value="Third">Tercera Clase (Third)</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="fare">Tarifa Pagada (Fare)</label>
+            <input id="fare" type="number" min="0" step="0.01" class="form-control" placeholder="Ej: 7.25"/>
+          </div>
+          <div class="form-group">
+            <label for="deck">Cubierta (Deck)</label>
+            <select id="deck" class="form-control">
+              <option value="">— Selecciona —</option>
+              <option value="A">A — Primera Clase</option>
+              <option value="B">B — Primera Clase</option>
+              <option value="C">C — Primera Clase</option>
+              <option value="D">D — Primera/Segunda</option>
+              <option value="E">E — Mixta</option>
+              <option value="F">F — Segunda/Tercera</option>
+              <option value="G">G — Tercera Clase</option>
+              <option value="unknown">Desconocido (Unknown)</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="embark_town">Puerto de Embarque</label>
+            <select id="embark_town" class="form-control">
+              <option value="">— Selecciona —</option>
+              <option value="Southampton">Southampton</option>
+              <option value="Cherbourg">Cherbourg</option>
+              <option value="Queenstown">Queenstown</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <!-- Sección 3: Acompañantes -->
+      <div style="margin-bottom: 24px; border-top: 1px solid var(--color-border); padding-top: 20px;">
+        <h3 style="font-size: 14px; font-weight: 700; color: var(--color-text-muted); text-transform: uppercase; margin-bottom: 14px; letter-spacing: 0.5px;">3. Acompañantes y Estado</h3>
+        <div class="grid-3">
+          <div class="form-group">
+            <label for="n_siblings_spouses">Hermanos/Cónyuges</label>
+            <input id="n_siblings_spouses" type="number" min="0" class="form-control" placeholder="Ej: 1"/>
+          </div>
+          <div class="form-group">
+            <label for="parch">Padres/Hijos</label>
+            <input id="parch" type="number" min="0" class="form-control" placeholder="Ej: 0"/>
+          </div>
+          <div class="form-group">
+            <label for="alone">¿Viaja Solo?</label>
+            <select id="alone" class="form-control">
+              <option value="">— Selecciona —</option>
+              <option value="y">Sí</option>
+              <option value="n">No</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <!-- Acciones -->
+      <div style="display: flex; gap: 12px; border-top: 1px solid var(--color-border); padding-top: 24px;">
+        <button class="btn btn-primary" id="btnPredict" onclick="predictSurvival()" style="flex: 1;">Predecir Supervivencia</button>
+        <button class="btn btn-secondary" onclick="clearForm()">Limpiar Formulario</button>
+      </div>
+
+      <!-- Error Alert -->
+      <div class="error-alert" id="errorAlert"></div>
+    </div>
+
+    <!-- Spinner Cargando -->
+    <div class="spinner-wrap" id="loadingSpinner">
+      <div class="spinner"></div>
+    </div>
+
+    <!-- Resultados -->
+    <div class="result-alert" id="resultAlert">
+      <span class="icon" id="resIcon"></span>
+      <div class="title" id="resTitle"></div>
+      <div style="font-size: 14px; color: var(--color-text-muted);">
+        Probabilidad estimada de sobrevivir: <strong id="resProb" style="color: var(--color-text); font-size: 22px; font-weight: 700;"></strong>
+      </div>
+      <div class="prob-bar-wrap">
+        <div class="prob-bar" id="probBar" style="width: 0%;"></div>
+      </div>
+    </div>
+  </main>
+
+  <!-- Disclaimer Footer -->
+  <footer class="footer-disclaimer">
+    <p><strong>⚕️ AVISO MÉDICO IMPORTANTE:</strong> Este sistema es una herramienta educativa desarrollada con fines académicos. NO constituye diagnóstico médico ni reemplaza la consulta con un profesional de la salud. Ante cualquier síntoma, consulte a su médico. En caso de emergencia, llame a los servicios de emergencias locales.</p>
+    <p style="margin-top: 10px; opacity: 0.8;">Fuentes clínicas: WHO HEARTS-D 2020 | ADA Standards of Care 2023 | Manual Merck</p>
+  </footer>
+
+  <script src="js/accidente.js"></script>
+  <script>
+    // Menú hamburguesa responsive
+    const navToggle = document.getElementById('navToggle');
+    const navLinks = document.getElementById('navLinks');
+    navToggle.addEventListener('click', () => {
+      navLinks.classList.toggle('open');
+    });
+  </script>
+</body>
+</html>

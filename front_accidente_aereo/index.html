@@ -3,526 +3,221 @@
 <head>
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Predictor de Supervivencia</title>
-  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet"/>
+  <title>DiabExpert — Base de Conocimiento</title>
+  <link rel="stylesheet" href="css/styles.css"/>
   <style>
-    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
-    :root {
-      --bg:       #0b0c10;
-      --surface:  #13151a;
-      --border:   #1f2230;
-      --accent:   #e8c84a;
-      --accent2:  #4a8fe8;
-      --text:     #e8e8e8;
-      --muted:    #6b7080;
-      --survive:  #3ecf8e;
-      --die:      #e84a4a;
-    }
-
-    body {
-      background: var(--bg);
-      color: var(--text);
-      font-family: 'DM Sans', sans-serif;
-      min-height: 100vh;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      padding: 40px 16px 80px;
-      background-image:
-        radial-gradient(ellipse 80% 40% at 50% -10%, rgba(74,143,232,0.12) 0%, transparent 70%),
-        repeating-linear-gradient(0deg, transparent, transparent 40px, rgba(255,255,255,0.015) 40px, rgba(255,255,255,0.015) 41px),
-        repeating-linear-gradient(90deg, transparent, transparent 40px, rgba(255,255,255,0.015) 40px, rgba(255,255,255,0.015) 41px);
-    }
-
-    /* HEADER */
-    header {
-      text-align: center;
-      margin-bottom: 48px;
-      animation: fadeDown 0.7s ease both;
-    }
-    .badge {
+    /* Estilos locales para visualizar reglas */
+    .symptom-tag {
+      background-color: #E2E8F0;
+      color: #0F172A;
+      font-size: 11px;
+      font-weight: 600;
+      padding: 3px 8px;
+      border-radius: var(--radius-sm);
       display: inline-block;
-      background: rgba(232,200,74,0.12);
-      border: 1px solid rgba(232,200,74,0.3);
-      color: var(--accent);
-      font-size: 11px;
-      letter-spacing: 3px;
-      text-transform: uppercase;
-      padding: 5px 14px;
-      border-radius: 100px;
-      margin-bottom: 18px;
+      cursor: help;
     }
-    h1 {
-      font-family: 'Bebas Neue', sans-serif;
-      font-size: clamp(42px, 8vw, 80px);
-      letter-spacing: 4px;
-      line-height: 1;
-      background: linear-gradient(135deg, #fff 0%, #a0aabf 100%);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      background-clip: text;
-    }
-    header p {
-      color: var(--muted);
-      font-size: 15px;
-      margin-top: 10px;
-      font-weight: 300;
-    }
-
-    /* CARD */
-    .card {
-      width: 100%;
-      max-width: 720px;
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: 20px;
-      padding: 36px;
-      animation: fadeUp 0.7s ease 0.1s both;
-      position: relative;
-      overflow: hidden;
-    }
-    .card::before {
-      content: '';
-      position: absolute;
-      top: 0; left: 0; right: 0;
-      height: 2px;
-      background: linear-gradient(90deg, transparent, var(--accent2), var(--accent), transparent);
-    }
-
-    .section-label {
-      font-size: 10px;
-      letter-spacing: 3px;
-      text-transform: uppercase;
-      color: var(--muted);
-      margin-bottom: 20px;
+    
+    .rule-row {
+      background-color: var(--color-bg);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-sm);
+      padding: 10px 14px;
+      margin-bottom: 8px;
       display: flex;
       align-items: center;
-      gap: 10px;
-    }
-    .section-label::after {
-      content: '';
-      flex: 1;
-      height: 1px;
-      background: var(--border);
+      flex-wrap: wrap;
+      gap: 8px;
     }
 
-    /* GRID */
-    .grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 16px;
-      margin-bottom: 24px;
-    }
-    .grid.full { grid-template-columns: 1fr; }
-
-    /* FIELD */
-    .field { display: flex; flex-direction: column; gap: 7px; }
-    .field label {
-      font-size: 11px;
-      letter-spacing: 1.5px;
+    .rule-operator {
+      color: var(--color-text-muted);
+      font-weight: 700;
+      font-size: 12px;
       text-transform: uppercase;
-      color: var(--muted);
-      font-weight: 500;
-    }
-    .field input,
-    .field select {
-      background: var(--bg);
-      border: 1px solid var(--border);
-      border-radius: 10px;
-      color: var(--text);
-      font-family: 'DM Sans', sans-serif;
-      font-size: 14px;
-      padding: 11px 14px;
-      outline: none;
-      transition: border-color 0.2s, box-shadow 0.2s;
-      width: 100%;
-      appearance: none;
-      -webkit-appearance: none;
-    }
-    .field select {
-      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%236b7080' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
-      background-repeat: no-repeat;
-      background-position: right 14px center;
-      padding-right: 36px;
-      cursor: pointer;
-    }
-    .field input:focus,
-    .field select:focus {
-      border-color: var(--accent2);
-      box-shadow: 0 0 0 3px rgba(74,143,232,0.12);
-    }
-    .field select option { background: #1a1d26; }
-
-    /* divider */
-    .divider {
-      height: 1px;
-      background: var(--border);
-      margin: 28px 0;
     }
 
-    /* ACTIONS */
-    .actions {
-      display: flex;
-      gap: 12px;
-    }
-    .btn {
-      padding: 13px 28px;
-      border-radius: 10px;
-      border: none;
-      font-family: 'DM Sans', sans-serif;
-      font-size: 14px;
-      font-weight: 500;
-      cursor: pointer;
-      transition: all 0.2s;
-      letter-spacing: 0.5px;
-    }
-    .btn-primary {
-      background: var(--accent);
-      color: #0b0c10;
-      flex: 1;
-    }
-    .btn-primary:hover { background: #f0d45a; transform: translateY(-1px); box-shadow: 0 8px 24px rgba(232,200,74,0.25); }
-    .btn-primary:active { transform: translateY(0); }
-    .btn-primary:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
-    .btn-secondary {
-      background: transparent;
-      border: 1px solid var(--border);
-      color: var(--muted);
-    }
-    .btn-secondary:hover { border-color: var(--text); color: var(--text); }
-
-    /* SPINNER */
-    .spinner-wrap {
-      display: none;
-      justify-content: center;
-      margin-top: 32px;
-    }
-    .spinner-wrap.visible { display: flex; }
-    .spinner {
-      width: 36px; height: 36px;
-      border: 3px solid var(--border);
-      border-top-color: var(--accent);
-      border-radius: 50%;
-      animation: spin 0.8s linear infinite;
+    .rule-arrow {
+      color: var(--color-primary-light);
+      font-weight: 700;
+      margin: 0 4px;
     }
 
-    /* RESULT */
-    .result {
-      display: none;
-      margin-top: 28px;
-      border-radius: 16px;
-      padding: 28px 32px;
-      animation: fadeUp 0.4s ease both;
-      border: 1px solid;
-      position: relative;
-      overflow: hidden;
+    .symptom-card {
+      background-color: #FFFFFF;
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-sm);
+      padding: 16px;
+      transition: var(--transition);
     }
-    .result.visible { display: block; }
-    .result.survive {
-      background: rgba(62,207,142,0.07);
-      border-color: rgba(62,207,142,0.3);
+
+    .symptom-card:hover {
+      transform: translateY(-2px);
+      box-shadow: var(--shadow-hover);
+      border-color: var(--color-primary-light);
     }
-    .result.die {
-      background: rgba(232,74,74,0.07);
-      border-color: rgba(232,74,74,0.3);
-    }
-    .result-icon {
-      font-size: 48px;
-      margin-bottom: 10px;
+
+    .symptom-card .sym-code {
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--color-primary-light);
+      text-transform: uppercase;
+      margin-bottom: 4px;
       display: block;
     }
-    .result-title {
-      font-family: 'Bebas Neue', sans-serif;
-      font-size: 36px;
-      letter-spacing: 3px;
-      margin-bottom: 8px;
-    }
-    .result.survive .result-title { color: var(--survive); }
-    .result.die .result-title { color: var(--die); }
-    .result-prob {
-      font-size: 14px;
-      color: var(--muted);
-    }
-    .result-prob strong {
-      color: var(--text);
-      font-size: 22px;
-      font-weight: 500;
+
+    .symptom-card h3 {
+      font-size: 16px;
+      font-family: var(--font-body);
+      font-weight: 600;
+      margin-bottom: 6px;
     }
 
-    /* BAR */
-    .prob-bar-wrap {
-      margin-top: 18px;
-      background: var(--border);
-      border-radius: 100px;
-      height: 6px;
-      overflow: hidden;
-    }
-    .prob-bar {
-      height: 100%;
-      border-radius: 100px;
-      transition: width 0.8s cubic-bezier(0.4,0,0.2,1);
-    }
-    .survive .prob-bar { background: var(--survive); }
-    .die .prob-bar { background: var(--die); }
-
-    /* ERROR */
-    .error-msg {
-      display: none;
-      margin-top: 20px;
-      padding: 14px 18px;
-      background: rgba(232,74,74,0.08);
-      border: 1px solid rgba(232,74,74,0.25);
-      border-radius: 10px;
-      color: #e84a4a;
-      font-size: 14px;
-    }
-    .error-msg.visible { display: block; }
-
-    /* ANIMATIONS */
-    @keyframes fadeDown {
-      from { opacity: 0; transform: translateY(-20px); }
-      to   { opacity: 1; transform: translateY(0); }
-    }
-    @keyframes fadeUp {
-      from { opacity: 0; transform: translateY(20px); }
-      to   { opacity: 1; transform: translateY(0); }
-    }
-    @keyframes spin {
-      to { transform: rotate(360deg); }
+    .symptom-card p {
+      font-size: 12px;
+      color: var(--color-text-muted);
     }
 
-    @media (max-width: 560px) {
-      .grid { grid-template-columns: 1fr; }
-      .card { padding: 24px 20px; }
+    .reference-section {
+      background-color: #1E3A5F;
+      color: #FFFFFF;
+      border-radius: var(--radius);
+      padding: 40px;
+      margin-top: 40px;
+    }
+
+    .reference-section h2 {
+      color: #FFFFFF;
+      margin-bottom: 20px;
+    }
+
+    .ref-list {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .ref-list li {
+      font-size: 13px;
+      border-bottom: 1px solid rgba(255,255,255,0.1);
+      padding-bottom: 12px;
+    }
+
+    .ref-list li:last-child {
+      border-bottom: none;
+      padding-bottom: 0;
+    }
+
+    .ref-list a {
+      color: var(--color-accent);
+      text-decoration: none;
+      font-weight: 600;
+      margin-left: 8px;
+    }
+
+    .ref-list a:hover {
+      text-decoration: underline;
     }
   </style>
 </head>
 <body>
 
-  <header>
-    <div class="badge">✈ Modelo de ML — TensorFlow</div>
-    <h1>Predictor de<br>Supervivencia</h1>
-    <p>Ingresa los datos del pasajero para obtener una predicción</p>
-  </header>
+  <!-- Navbar -->
+  <nav class="navbar">
+    <a href="index.html" class="nav-logo">
+      <svg viewBox="0 0 24 24">
+        <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-3H8v-2h3V8h2v3h3v2h-3v3z"/>
+      </svg>
+      DiabExpert
+    </a>
+    <button class="nav-toggle" id="navToggle">☰</button>
+    <ul class="nav-links" id="navLinks">
+      <li><a href="index.html" class="active">Base de Conocimiento</a></li>
+      <li><a href="arbol.html">Árbol de Decisión</a></li>
+      <li><a href="test.html">Test Diagnóstico</a></li>
+      <li><a href="accidente.html">Accidente Aéreo</a></li>
+    </ul>
+  </nav>
 
-  <div class="card">
+  <!-- Container -->
+  <main class="container animated">
+    <!-- Hero -->
+    <header style="margin-bottom: 40px;">
+      <span class="badge badge-primary">v1.0 — Base de Conocimiento Científica</span>
+      <h1 style="margin-top: 10px;">Sistema Experto: Diabetes Mellitus</h1>
+      <p class="subtitle">La diabetes mellitus es un grupo de trastornos metabólicos caracterizados por hiperglucemia crónica, resultado de defectos en la secreción o acción de la insulina. Diagnósticos basados en criterios oficiales de la OMS y la ADA.</p>
+    </header>
 
-    <div class="section-label">Datos personales</div>
-    <div class="grid">
-
-      <div class="field">
-        <label>Sexo</label>
-        <select id="sex">
-          <option value="">— Selecciona —</option>
-          <option value="male">Male</option>
-          <option value="female">Female</option>
-        </select>
+    <!-- Sección de Reglas de Diagnóstico -->
+    <section class="card">
+      <h2 style="font-size: 28px; margin-bottom: 12px;">Reglas de Diagnóstico</h2>
+      <p style="color: var(--color-text-muted); font-size: 14px; margin-bottom: 24px;">
+        A continuación se muestran las combinaciones de síntomas que activan las deducciones de nuestro motor lógico experto.
+      </p>
+      
+      <div id="diagnosesList" style="display: flex; flex-direction: column; gap: 24px;">
+        <!-- Se llena con JS -->
       </div>
+    </section>
 
-      <div class="field">
-        <label>Edad</label>
-        <input id="age" type="number" min="0" max="100" placeholder="Ej: 28"/>
+    <!-- Sección Catálogo de Síntomas -->
+    <section class="card">
+      <h2 style="font-size: 28px; margin-bottom: 12px;">Catálogo de Síntomas</h2>
+      <p style="color: var(--color-text-muted); font-size: 14px; margin-bottom: 24px;">
+        Contamos con 25 síntomas codificados en la base de conocimientos para realizar el análisis diferencial.
+      </p>
+      
+      <div class="grid-3" id="symptomsGrid">
+        <!-- Se llena con JS -->
       </div>
+    </section>
 
-    </div>
+    <!-- Referencias Científicas -->
+    <section class="reference-section">
+      <h2>Fuentes Científicas Oficiales</h2>
+      <ul class="ref-list">
+        <li>
+          <strong>[1] WHO HEARTS-D — Diagnosis and Management of Type 2 Diabetes (2020)</strong><br/>
+          Organización Mundial de la Salud - Directrices Clínicas Oficiales.
+          <a href="https://www.who.int/publications/i/item/who-ucn-ncd-20.1" target="_blank">Ver publicación ↗</a>
+          <a href="https://apps.who.int/iris/bitstream/handle/10665/331710/WHO-UCN-NCD-20.1-eng.pdf" target="_blank">Descargar PDF ↗</a>
+        </li>
+        <li>
+          <strong>[2] ADA Standards of Care in Diabetes — 2023</strong><br/>
+          Asociación Americana de la Diabetes (ADA) - Sección 2: Clasificación y Diagnóstico de la Diabetes.
+          <a href="https://doi.org/10.2337/dc23-S002" target="_blank">Ver DOI ↗</a>
+          <a href="https://pubmed.ncbi.nlm.nih.gov/36507649/" target="_blank">PubMed ↗</a>
+        </li>
+        <li>
+          <strong>[3] ADA Standards of Care — Abridged for Primary Care 2023</strong><br/>
+          Clinical Diabetes, Guía de diagnóstico médico en el primer nivel de atención.
+          <a href="https://doi.org/10.2337/cd23-as01" target="_blank">Ver DOI ↗</a>
+        </li>
+        <li>
+          <strong>[4] Manual Merck — Diabetes Mellitus (Versión Profesional)</strong><br/>
+          Manual clínico de referencia y criterios diagnósticos.
+          <a href="https://www.merckmanuals.com/es-us/professional/trastornos-endocrinol%C3%B3gicos-y-metab%C3%B3licos/diabetes-mellitus-y-trastornos-del-metabolismo-de-los-hidratos-de-carbono/diabetes-mellitus-dm" target="_blank">Ir al manual ↗</a>
+        </li>
+      </ul>
+    </section>
+  </main>
 
-    <div class="divider"></div>
-    <div class="section-label">Datos del pasaje</div>
-    <div class="grid">
+  <!-- Disclaimer Footer -->
+  <footer class="footer-disclaimer">
+    <p><strong>⚕️ AVISO MÉDICO IMPORTANTE:</strong> Este sistema es una herramienta educativa desarrollada con fines académicos. NO constituye diagnóstico médico ni reemplaza la consulta con un profesional de la salud. Ante cualquier síntoma, consulte a su médico. En caso de emergencia, llame a los servicios de emergencias locales.</p>
+    <p style="margin-top: 10px; opacity: 0.8;">Fuentes clínicas: WHO HEARTS-D 2020 | ADA Standards of Care 2023 | Manual Merck</p>
+  </footer>
 
-      <div class="field">
-        <label>Clase</label>
-        <select id="clase">
-          <option value="">— Selecciona —</option>
-          <option value="First">First</option>
-          <option value="Second">Second</option>
-          <option value="Third">Third</option>
-        </select>
-      </div>
-
-      <div class="field">
-        <label>Tarifa (Fare)</label>
-        <input id="fare" type="number" min="0" step="0.01" placeholder="Ej: 7.25"/>
-      </div>
-
-      <div class="field">
-        <label>Cubierta (Deck)</label>
-        <select id="deck">
-          <option value="">— Selecciona —</option>
-          <option value="A">A — Primera clase</option>
-          <option value="B">B — Primera clase</option>
-          <option value="C">C — Primera clase</option>
-          <option value="D">D — Primera / Segunda</option>
-          <option value="E">E — Mixta</option>
-          <option value="F">F — Segunda / Tercera</option>
-          <option value="G">G — Tercera clase</option>
-          <option value="unknown">Unknown</option>
-        </select>
-      </div>
-
-      <div class="field">
-        <label>Puerto de embarque</label>
-        <select id="embark_town">
-          <option value="">— Selecciona —</option>
-          <option value="Southampton">Southampton</option>
-          <option value="Cherbourg">Cherbourg</option>
-          <option value="Queenstown">Queenstown</option>
-        </select>
-      </div>
-
-    </div>
-
-    <div class="divider"></div>
-    <div class="section-label">Acompañantes</div>
-    <div class="grid">
-
-      <div class="field">
-        <label>Hermanos / Cónyuge a bordo</label>
-        <input id="n_siblings_spouses" type="number" min="0" placeholder="Ej: 1"/>
-      </div>
-
-      <div class="field">
-        <label>Padres / Hijos a bordo</label>
-        <input id="parch" type="number" min="0" placeholder="Ej: 0"/>
-      </div>
-
-      <div class="field">
-        <label>¿Viaja solo?</label>
-        <select id="alone">
-          <option value="">— Selecciona —</option>
-          <option value="y">Sí</option>
-          <option value="n">No</option>
-        </select>
-      </div>
-
-    </div>
-
-    <div class="divider"></div>
-
-    <div class="actions">
-      <button class="btn btn-primary" id="btnPredecir" onclick="predecir()">Predecir supervivencia</button>
-      <button class="btn btn-secondary" onclick="limpiar()">Limpiar</button>
-    </div>
-
-    <div class="error-msg" id="errorMsg"></div>
-
-  </div>
-
-  <!-- SPINNER -->
-  <div class="spinner-wrap" id="spinnerWrap">
-    <div class="spinner"></div>
-  </div>
-
-  <!-- RESULTADO -->
-  <div class="result" id="resultado" style="max-width:720px;width:100%;">
-    <span class="result-icon" id="resIcon"></span>
-    <div class="result-title" id="resTitle"></div>
-    <div class="result-prob">
-      Probabilidad de sobrevivir: <strong id="resProb"></strong>
-    </div>
-    <div class="prob-bar-wrap">
-      <div class="prob-bar" id="probBar" style="width:0%"></div>
-    </div>
-  </div>
-
+  <script src="js/expert.js"></script>
+  <script src="js/knowledge.js"></script>
   <script>
-    const API = 'http://localhost:8000/predecir';
-
-    function getVal(id) {
-      return document.getElementById(id).value;
-    }
-
-    async function predecir() {
-      // Limpiar estado anterior
-      ocultarResultado();
-      ocultarError();
-
-      // Validar campos
-      const campos = ['sex','age','clase','fare','deck','embark_town','n_siblings_spouses','parch','alone'];
-      for (const c of campos) {
-        if (!getVal(c) && getVal(c) !== '0') {
-          mostrarError('Por favor completa todos los campos antes de predecir.');
-          return;
-        }
-      }
-
-      const body = {
-        sex:                getVal('sex'),
-        age:                parseFloat(getVal('age')),
-        n_siblings_spouses: parseInt(getVal('n_siblings_spouses')),
-        parch:              parseInt(getVal('parch')),
-        fare:               parseFloat(getVal('fare')),
-        clase:              getVal('clase'),
-        deck:               getVal('deck'),
-        embark_town:        getVal('embark_town'),
-        alone:              getVal('alone')
-      };
-
-      // Mostrar spinner
-      document.getElementById('spinnerWrap').classList.add('visible');
-      document.getElementById('btnPredecir').disabled = true;
-
-      try {
-        const res = await fetch(API, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(body)
-        });
-
-        if (!res.ok) throw new Error('Error del servidor');
-
-        const data = await res.json();
-        mostrarResultado(data);
-
-      } catch (e) {
-        mostrarError('No se pudo conectar con el servidor. Verifica que FastAPI esté corriendo en localhost:8000');
-      } finally {
-        document.getElementById('spinnerWrap').classList.remove('visible');
-        document.getElementById('btnPredecir').disabled = false;
-      }
-    }
-
-    function mostrarResultado(data) {
-      const el = document.getElementById('resultado');
-      const porcentaje = (data.probabilidad * 100).toFixed(1);
-
-      el.className = `result visible ${data.sobrevive ? 'survive' : 'die'}`;
-      document.getElementById('resIcon').textContent  = data.sobrevive ? '✈️' : '💀';
-      document.getElementById('resTitle').textContent = data.sobrevive ? 'SOBREVIVE' : 'NO SOBREVIVE';
-      document.getElementById('resProb').textContent  = `${porcentaje}%`;
-
-      // Animar barra
-      setTimeout(() => {
-        document.getElementById('probBar').style.width = `${porcentaje}%`;
-      }, 100);
-
-      el.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-    }
-
-    function ocultarResultado() {
-      const el = document.getElementById('resultado');
-      el.className = 'result';
-      document.getElementById('probBar').style.width = '0%';
-    }
-
-    function mostrarError(msg) {
-      const el = document.getElementById('errorMsg');
-      el.textContent = msg;
-      el.classList.add('visible');
-    }
-
-    function ocultarError() {
-      document.getElementById('errorMsg').classList.remove('visible');
-    }
-
-    function limpiar() {
-      ['sex','age','clase','fare','deck','embark_town','n_siblings_spouses','parch','alone']
-        .forEach(id => document.getElementById(id).value = '');
-      ocultarResultado();
-      ocultarError();
-    }
+    // Menú hamburguesa responsive
+    const navToggle = document.getElementById('navToggle');
+    const navLinks = document.getElementById('navLinks');
+    navToggle.addEventListener('click', () => {
+      navLinks.classList.toggle('open');
+    });
   </script>
-
 </body>
 </html>
