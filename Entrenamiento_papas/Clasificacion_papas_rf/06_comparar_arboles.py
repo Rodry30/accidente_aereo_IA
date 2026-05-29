@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 """
 Script 06: Efecto del Número de Árboles (Estimadores)
-Autor: Antigravity AI
 Descripción: Entrena múltiples clasificadores Random Forest con diferente número de árboles
              (de 10 a 500), evalúa el desempeño en Train, Test y OOB, y grafica las
              3 curvas resultantes para analizar la estabilidad del modelo.

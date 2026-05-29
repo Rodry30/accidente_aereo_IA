@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 """
 Script 01: Exploración del Dataset (Random Forest)
-Autor: Antigravity AI
 Descripción: Verifica la existencia del dataset de imágenes de papas nativas,
              analiza su legibilidad e imprime estadísticas de distribución de clases.
 """

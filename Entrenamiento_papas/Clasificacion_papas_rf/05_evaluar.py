@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 """
 Script 05: Evaluación Exhaustiva del Modelo (Random Forest)
-Autor: Antigravity AI
 Descripción: Carga el modelo, conjunto de test y mapas de etiquetas.
              Calcula exactitud Top-1, Top-3, Top-5 y OOB. Genera la matriz
              de confusión, identifica las mejores y peores variedades con sus

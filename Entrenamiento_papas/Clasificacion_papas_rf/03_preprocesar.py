@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 """
 Script 03: Preprocesamiento de Características (Random Forest)
-Autor: Antigravity AI
 Descripción: Carga 'features.csv', limpia NaNs/infinitos, analiza el balance de clases,
              divide en train/test estratificado, normaliza y guarda las matrices procesadas.
 """

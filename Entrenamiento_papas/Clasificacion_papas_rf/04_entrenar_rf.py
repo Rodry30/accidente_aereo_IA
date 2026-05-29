@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 """
 Script 04: Entrenamiento y Optimización de Random Forest
-Autor: Antigravity AI
 Descripción: Entrena un modelo base de Random Forest, realiza una búsqueda de
              hiperparámetros óptimos mediante RandomizedSearchCV, calcula la importancia
              de características, guarda el mejor modelo y grafica el Top 20 de importancia.

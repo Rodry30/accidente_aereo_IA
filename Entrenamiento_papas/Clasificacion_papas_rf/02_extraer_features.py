@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 """
 Script 02: Extracción y Reutilización de Características (Random Forest)
-Autor: Antigravity AI
 Descripción: Copia el archivo 'features.csv' desde el proyecto de red neuronal
              si existe (en carpeta original o renombrada), de lo contrario extrae
              las 45 características tabulares desde cero para todas las imágenes.

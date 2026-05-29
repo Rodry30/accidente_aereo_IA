@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 """
 Script 07: Clasificador de Papa Nativa con Random Forest (Inferencia)
-Autor: Antigravity AI
 Descripción: Carga el modelo Random Forest, escalador y mapa de etiquetas entrenados.
              Recibe la ruta de una imagen de papa, extrae sus características,
              la clasifica y muestra los Top-3 resultados más probables.
