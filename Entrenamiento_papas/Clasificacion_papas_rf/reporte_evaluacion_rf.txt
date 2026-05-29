@@ -1,0 +1,162 @@
+================================================================================
+=== REPORTE DE EVALUACIÓN — RANDOM FOREST PAPAS NATIVAS PERUANAS ===
+================================================================================
+Fecha: 2026-05-29 11:53:09
+Dataset: dataset128x128
+Total imágenes de Entrenamiento: 3890
+Total imágenes de Prueba:      973
+Clases: 83 variedades de papas nativas
+Hiperparámetros del Modelo: {'bootstrap': True, 'ccp_alpha': 0.0, 'class_weight': 'balanced', 'criterion': 'gini', 'max_depth': 30, 'max_features': 'sqrt', 'max_leaf_nodes': None, 'max_samples': None, 'min_impurity_decrease': 0.0, 'min_samples_leaf': 1, 'min_samples_split': 5, 'min_weight_fraction_leaf': 0.0, 'monotonic_cst': None, 'n_estimators': 300, 'n_jobs': -1, 'oob_score': True, 'random_state': 42, 'verbose': 0, 'warm_start': False}
+
+OOB Score (Out-of-Bag Score):      75.71%
+Exactitud Global (Top-1 Accuracy): 76.26%
+Exactitud Global (Top-3 Accuracy): 91.98%
+Exactitud Global (Top-5 Accuracy): 95.58%
+
+=== REPORTE DE CLASIFICACIÓN COMPLETO ===
+              precision    recall  f1-score   support
+
+          V1       0.64      0.70      0.67        10
+         V10       0.63      0.80      0.71        15
+         V11       1.00      1.00      1.00        10
+         V12       0.88      0.93      0.90        15
+         V13       0.93      0.87      0.90        15
+         V14       0.72      0.93      0.81        28
+         V15       0.61      0.85      0.71        33
+         V16       0.93      1.00      0.96        13
+         V17       1.00      1.00      1.00        10
+         V18       0.71      1.00      0.83        10
+         V19       0.75      0.60      0.67        10
+          V2       0.62      0.73      0.67        11
+         V20       0.70      0.70      0.70        10
+         V21       0.71      0.50      0.59        10
+         V22       1.00      0.80      0.89        10
+         V23       0.71      1.00      0.83        10
+         V24       0.83      0.50      0.62        10
+         V25       0.71      1.00      0.83        10
+         V26       0.82      0.90      0.86        10
+         V27       0.88      1.00      0.93        14
+         V28       0.59      0.87      0.70        15
+         V29       1.00      0.64      0.78        11
+          V3       0.67      0.36      0.47        11
+         V30       0.62      0.50      0.56        10
+         V31       0.64      0.70      0.67        10
+         V32       0.25      0.20      0.22        10
+         V33       1.00      0.60      0.75        10
+         V34       1.00      0.80      0.89        10
+         V35       0.73      0.80      0.76        10
+         V36       1.00      1.00      1.00        10
+         V37       0.70      0.70      0.70        10
+         V38       0.62      0.50      0.56        10
+         V39       0.86      0.86      0.86        14
+          V4       1.00      0.45      0.62        11
+         V40       0.80      0.73      0.76        11
+         V41       0.88      0.54      0.67        13
+         V42       0.93      1.00      0.97        14
+         V43       0.65      0.92      0.76        12
+         V44       0.85      0.85      0.85        13
+         V45       0.88      0.70      0.78        10
+         V46       1.00      0.82      0.90        11
+         V47       0.75      0.69      0.72        13
+         V48       0.73      0.80      0.76        10
+         V49       0.77      0.67      0.71        15
+          V5       0.75      0.60      0.67        10
+         V50       0.82      0.75      0.78        12
+         V51       0.83      1.00      0.91        15
+         V52       0.88      0.58      0.70        12
+         V53       0.71      0.50      0.59        10
+         V54       0.83      1.00      0.91        10
+         V55       0.56      0.50      0.53        10
+         V56       0.38      0.50      0.43        10
+         V57       1.00      1.00      1.00        10
+         V58       0.78      0.70      0.74        10
+         V59       0.81      0.76      0.79        17
+          V6       0.90      0.90      0.90        10
+         V60       0.60      0.67      0.63         9
+         V61       0.69      0.90      0.78        10
+         V62       0.83      1.00      0.91        10
+         V63       0.82      0.64      0.72        14
+         V64       0.80      0.86      0.83        14
+         V65       0.76      1.00      0.87        13
+         V66       0.58      0.70      0.64        10
+         V67       0.73      0.73      0.73        11
+         V68       0.93      0.93      0.93        15
+         V69       0.77      0.71      0.74        14
+          V7       0.55      0.60      0.57        10
+         V70       0.65      0.73      0.69        15
+         V71       0.93      0.87      0.90        15
+         V72       0.75      0.46      0.57        13
+         V73       0.71      1.00      0.83        10
+         V75       1.00      1.00      1.00        10
+         V76       1.00      0.64      0.78        11
+         V77       0.75      0.60      0.67         5
+         V78       0.50      0.33      0.40         6
+         V79       0.62      0.83      0.71         6
+          V8       0.67      0.40      0.50        10
+         V80       0.80      0.80      0.80         5
+         V81       0.64      0.80      0.71        20
+         V82       0.91      0.67      0.77        15
+         V83       1.00      0.33      0.50         9
+         V84       0.90      1.00      0.95         9
+          V9       0.67      0.60      0.63        10
+
+    accuracy                           0.76       973
+   macro avg       0.78      0.75      0.75       973
+weighted avg       0.78      0.76      0.76       973
+
+=== TOP 20 CARACTERÍSTICAS MÁS IMPORTANTES (RANDOM FOREST) ===
+  1  . s_std                          -> Importancia: 6.6512%
+  2  . compactness                    -> Importancia: 6.2997%
+  3  . s_mean                         -> Importancia: 4.7341%
+  4  . hist_gray_1                    -> Importancia: 4.0729%
+  5  . sobel_mean                     -> Importancia: 3.7110%
+  6  . h_std                          -> Importancia: 3.6962%
+  7  . hist_gray_3                    -> Importancia: 3.6185%
+  8  . sobel_std                      -> Importancia: 3.5129%
+  9  . hist_gray_0                    -> Importancia: 3.3669%
+  10 . lbp_4                          -> Importancia: 3.1618%
+  11 . lbp_5                          -> Importancia: 3.0353%
+  12 . r_std                          -> Importancia: 2.8531%
+  13 . hist_gray_2                    -> Importancia: 2.8299%
+  14 . v_std                          -> Importancia: 2.7872%
+  15 . hist_gray_4                    -> Importancia: 2.5414%
+  16 . lbp_6                          -> Importancia: 2.4903%
+  17 . h_mean                         -> Importancia: 2.4835%
+  18 . lbp_0                          -> Importancia: 2.4310%
+  19 . g_std                          -> Importancia: 2.2996%
+  20 . b_std                          -> Importancia: 2.2745%
+
+=== TOP 10 VARIEDADES MEJOR CLASIFICADAS ===
+  * V11 -> F1-Score: 1.0000 (Soporte: 10)
+  * V17 -> F1-Score: 1.0000 (Soporte: 10)
+  * V36 -> F1-Score: 1.0000 (Soporte: 10)
+  * V57 -> F1-Score: 1.0000 (Soporte: 10)
+  * V75 -> F1-Score: 1.0000 (Soporte: 10)
+  * V42 -> F1-Score: 0.9655 (Soporte: 14)
+  * V16 -> F1-Score: 0.9630 (Soporte: 13)
+  * V84 -> F1-Score: 0.9474 (Soporte: 9)
+  * V68 -> F1-Score: 0.9333 (Soporte: 15)
+  * V27 -> F1-Score: 0.9333 (Soporte: 14)
+
+=== TOP 10 VARIEDADES PEOR CLASIFICADAS ===
+  * V32 -> F1-Score: 0.2222
+    - Se confunde más con: 'V31' (detectada 4 veces)
+  * V78 -> F1-Score: 0.4000
+    - Se confunde más con: 'V81' (detectada 2 veces)
+  * V56 -> F1-Score: 0.4348
+    - Se confunde más con: 'V43' (detectada 2 veces)
+  * V3 -> F1-Score: 0.4706
+    - Se confunde más con: 'V61' (detectada 2 veces)
+  * V8 -> F1-Score: 0.5000
+    - Se confunde más con: 'V55' (detectada 2 veces)
+  * V83 -> F1-Score: 0.5000
+    - Se confunde más con: 'V81' (detectada 3 veces)
+  * V55 -> F1-Score: 0.5263
+    - Se confunde más con: 'V10' (detectada 2 veces)
+  * V38 -> F1-Score: 0.5556
+    - Se confunde más con: 'V70' (detectada 2 veces)
+  * V30 -> F1-Score: 0.5556
+    - Se confunde más con: 'V32' (detectada 2 veces)
+  * V7 -> F1-Score: 0.5714
+    - Se confunde más con: 'V25' (detectada 2 veces)
+================================================================================

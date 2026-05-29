@@ -1,0 +1,345 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Papa Classifier RF — Random Forest</title>
+  <link rel="stylesheet" href="css/styles.css"/>
+  <style>
+    /* Estilos específicos para Drag & Drop e interfaz de papas */
+    .drop-zone {
+      border: 2px dashed var(--color-border);
+      border-radius: var(--radius);
+      padding: 40px 20px;
+      text-align: center;
+      background: var(--color-surface);
+      cursor: pointer;
+      transition: var(--transition);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+      min-height: 220px;
+    }
+
+    .drop-zone:hover, .drop-zone.dragover {
+      border-color: var(--color-primary-light);
+      background: rgba(37, 99, 235, 0.02);
+    }
+
+    .drop-zone svg {
+      width: 48px;
+      height: 48px;
+      fill: var(--color-text-muted);
+      transition: var(--transition);
+    }
+
+    .drop-zone:hover svg, .drop-zone.dragover svg {
+      fill: var(--color-primary-light);
+      transform: translateY(-4px);
+    }
+
+    .drop-zone p {
+      font-size: 14px;
+      color: var(--color-text-muted);
+    }
+
+    .drop-zone strong {
+      color: var(--color-primary-light);
+    }
+
+    .preview-container {
+      display: none;
+      text-align: center;
+      animation: fadeInUp 0.4s ease both;
+    }
+
+    .preview-image {
+      max-width: 100%;
+      max-height: 300px;
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      border: 4px solid #FFFFFF;
+    }
+
+    /* Panel dual de imágenes en resultado */
+    .image-comparison-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 24px;
+      margin-top: 24px;
+    }
+
+    .img-box {
+      background: #F1F5F9;
+      border-radius: var(--radius);
+      padding: 16px;
+      text-align: center;
+      border: 1px solid var(--color-border);
+    }
+
+    .img-box h4 {
+      font-size: 13px;
+      font-weight: 700;
+      text-transform: uppercase;
+      color: var(--color-text-muted);
+      margin-bottom: 12px;
+      letter-spacing: 0.5px;
+    }
+
+    .img-box img {
+      max-width: 100%;
+      height: 180px;
+      object-fit: cover;
+      border-radius: var(--radius-sm);
+      box-shadow: var(--shadow);
+      border: 3px solid #FFFFFF;
+    }
+
+    .no-example {
+      height: 180px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--color-text-muted);
+      font-size: 13px;
+      font-style: italic;
+      background: #E2E8F0;
+      border-radius: var(--radius-sm);
+    }
+
+    /* Top 5 listado */
+    .top5-container {
+      margin-top: 28px;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+
+    .top5-row {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .top5-info {
+      display: flex;
+      justify-content: space-between;
+      font-size: 13px;
+      font-weight: 600;
+    }
+
+    .top5-name {
+      color: var(--color-text);
+    }
+
+    .top5-val {
+      color: var(--color-primary-light);
+    }
+
+    .top5-bar-wrap {
+      background: var(--color-border);
+      border-radius: 100px;
+      height: 6px;
+      overflow: hidden;
+    }
+
+    .top5-bar {
+      background: var(--color-primary-light);
+      height: 100%;
+      border-radius: 100px;
+      transition: width 1s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    /* Resultados */
+    .result-card {
+      display: none;
+      animation: fadeInUp 0.4s ease both;
+    }
+
+    .result-card.visible {
+      display: block;
+    }
+
+    /* Spinner en overlay */
+    .spinner-wrap {
+      display: none;
+      margin: 20px 0;
+    }
+
+    .spinner-wrap.visible {
+      display: flex;
+      justify-content: center;
+    }
+
+    .spinner {
+      width: 40px;
+      height: 40px;
+      border: 4px solid var(--color-border);
+      border-top-color: var(--color-primary-light);
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    /* Error alert */
+    .error-alert {
+      display: none;
+      margin-top: 20px;
+      padding: 14px 18px;
+      background: rgba(239, 68, 68, 0.08);
+      border: 1px solid rgba(239, 68, 68, 0.25);
+      border-radius: var(--radius-sm);
+      color: var(--color-danger);
+      font-size: 14px;
+      white-space: pre-line;
+    }
+
+    .error-alert.visible {
+      display: block;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Navbar -->
+  <nav class="navbar">
+    <a href="index.html" class="nav-logo">
+      <svg viewBox="0 0 24 24">
+        <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-3H8v-2h3V8h2v3h3v2h-3v3z"/>
+      </svg>
+      DiabExpert
+    </a>
+    <button class="nav-toggle" id="navToggle">☰</button>
+    <ul class="nav-links" id="navLinks">
+      <li><a href="index.html">Base de Conocimiento</a></li>
+      <li><a href="arbol.html">Árbol de Decisión</a></li>
+      <li><a href="test.html">Test Diagnóstico</a></li>
+      <li><a href="accidente.html">Accidente Aéreo</a></li>
+      <li><a href="papa_mlp.html">Papa MLP (Redes)</a></li>
+      <li><a href="papa_rf.html" class="active">Papa RF (Forest)</a></li>
+    </ul>
+  </nav>
+
+  <!-- Container -->
+  <main class="container animated">
+    <header style="margin-bottom: 30px;">
+      <span class="badge badge-warning">Ensemble Estimator — Random Forest Classifier</span>
+      <h1 style="margin-top: 10px;">Clasificador de Papas Nativas</h1>
+      <p class="subtitle">Sube una fotografía de una papa nativa peruana. Nuestro modelo optimizado de Random Forest (300 árboles de decisión) evaluará las 45 características tabulares para clasificarla con alta precisión basándose en métricas del estimador OOB (Out-of-Bag).</p>
+    </header>
+
+    <!-- Subidor de imágenes -->
+    <div class="card">
+      <h2 style="font-size: 24px; margin-bottom: 20px; border-bottom: 1px solid var(--color-border); padding-bottom: 12px;">Cargar Imagen de Papa</h2>
+      
+      <!-- Zona interactiva Drag and Drop -->
+      <div class="drop-zone" id="dropZone">
+        <svg viewBox="0 0 24 24">
+          <path d="M19.35 10.04C18.67 6.59 15.64 4 12 4 9.11 4 6.6 5.64 5.35 8.04 2.34 8.36 0 10.91 0 14c0 3.31 2.69 6 6 6h13c2.76 0 5-2.24 5-5 0-2.64-2.05-4.78-4.65-4.96zM14 13v4h-4v-4H7l5-5 5 5h-3z"/>
+        </svg>
+        <p>Arrastra y suelta tu imagen aquí o <strong>haz clic para examinar archivos</strong></p>
+        <p style="font-size: 11px; opacity: 0.7;">Formatos soportados: JPG, JPEG, PNG</p>
+      </div>
+
+      <!-- Input file oculto -->
+      <input type="file" id="fileInput" accept="image/*" style="display: none;"/>
+
+      <!-- Contenedor de previsualización -->
+      <div class="preview-container" id="previewContainer">
+        <img src="" alt="Previsualización" class="preview-image" id="imgPreview"/>
+        <p style="margin-top: 10px; font-size: 12px; color: var(--color-text-muted);" id="fileNameText"></p>
+      </div>
+
+      <!-- Acciones del Formulario -->
+      <div style="display: flex; gap: 12px; border-top: 1px solid var(--color-border); margin-top: 24px; padding-top: 24px;">
+        <button class="btn btn-primary" id="btnClassify" onclick="clasificarPapa()" style="flex: 1;" disabled>Clasificar con Random Forest</button>
+        <button class="btn btn-secondary" id="btnClear" onclick="clearForm()">Limpiar Imagen</button>
+      </div>
+
+      <!-- Alerta de Error -->
+      <div class="error-alert" id="errorAlert"></div>
+    </div>
+
+    <!-- Spinner Cargando -->
+    <div class="spinner-wrap" id="loadingSpinner">
+      <div class="spinner"></div>
+    </div>
+
+    <!-- Resultados -->
+    <div class="card result-card" id="resultCard">
+      <h2 style="font-size: 24px; margin-bottom: 12px; color: var(--color-primary);">Clasificación Exitosa (Random Forest)</h2>
+      
+      <!-- Detalle de la Predicción Principal -->
+      <div style="background: rgba(16, 185, 129, 0.08); border: 1px solid rgba(16, 185, 129, 0.25); padding: 20px 24px; border-radius: var(--radius); display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 16px;">
+        <div>
+          <span style="font-size: 11px; font-weight: 700; color: var(--color-accent); text-transform: uppercase; letter-spacing: 0.5px;">Variedad Predicha</span>
+          <h3 style="font-size: 36px; margin: 0; color: var(--color-text); font-family: var(--font-display);" id="resVariety">--</h3>
+        </div>
+        <div style="text-align: right;">
+          <span style="font-size: 11px; font-weight: 700; color: var(--color-text-muted); text-transform: uppercase; letter-spacing: 0.5px;">Confianza de Predicción</span>
+          <h4 style="font-size: 28px; margin: 0; color: var(--color-primary-light);" id="resConfianza">0.00%</h4>
+        </div>
+      </div>
+
+      <!-- Barra de Confianza Principal -->
+      <div style="background: var(--color-border); border-radius: 100px; height: 8px; overflow: hidden; margin-top: 14px;">
+        <div style="background: var(--color-accent); height: 100%; border-radius: 100px; width: 0%; transition: width 0.8s ease;" id="confidenceBar"></div>
+      </div>
+
+      <!-- Grilla Dual de Comparación Visual -->
+      <div class="image-comparison-grid">
+        <div class="img-box">
+          <h4>Tu Imagen Carga</h4>
+          <img src="" alt="Tu Papa" id="imgPreviewInResult"/>
+        </div>
+        <div class="img-box">
+          <h4>Ejemplo del Dataset Original</h4>
+          <img src="" alt="Ejemplo Dataset" id="imgExample" style="display: none;"/>
+          <div class="no-example" id="noExampleText">Imagen de ejemplo no disponible</div>
+        </div>
+      </div>
+
+      <!-- Top 5 Variedades Más Probables -->
+      <div style="margin-top: 36px; border-top: 1px solid var(--color-border); padding-top: 24px;">
+        <h3 style="font-size: 20px; color: var(--color-primary); margin-bottom: 18px;">Top 5 Variedades Más Probables</h3>
+        <div class="top5-container" id="top5Container">
+          <!-- Se inyecta dinámicamente con JS -->
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <!-- Disclaimer Footer -->
+  <footer class="footer-disclaimer">
+    <p><strong>⚕️ AVISO MÉDICO E INVESTIGATIVO:</strong> Este sistema es una herramienta desarrollada con fines académicos y de investigación en Inteligencia Artificial. La clasificación está sujeta al volumen y características del dataset de entrenamiento.</p>
+    <p style="margin-top: 10px; opacity: 0.8;">Universidad Peruana - Escuela de Ingeniería de Sistemas | IA 2026</p>
+  </footer>
+
+  <script src="js/papa_rf.js"></script>
+  <script>
+    // Menú hamburguesa responsive
+    const navToggle = document.getElementById('navToggle');
+    const navLinks = document.getElementById('navLinks');
+    navToggle.addEventListener('click', () => {
+      navLinks.classList.toggle('open');
+    });
+
+    // Enlace de previsualizador dual
+    const originalHandleFile = handleFile;
+    handleFile = function(file) {
+      originalHandleFile(file);
+      // Sincronizar previsualización en el visor de resultados
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        document.getElementById('imgPreviewInResult').src = e.target.result;
+      };
+      reader.readAsDataURL(file);
+    };
+  </script>
+</body>
+</html>

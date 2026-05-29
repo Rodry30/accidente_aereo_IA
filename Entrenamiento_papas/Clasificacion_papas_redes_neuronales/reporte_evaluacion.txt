@@ -1,7 +1,7 @@
 ================================================================================
 === REPORTE DE EVALUACIÓN — MLP PAPAS NATIVAS PERUANAS ===
 ================================================================================
-Fecha: 2026-05-29 03:36:22
+Fecha: 2026-05-29 12:48:10
 Dataset: dataset128x128
 Total imágenes de Entrenamiento: 3890
 Total imágenes de Prueba:      973
@@ -10,6 +10,14 @@ Clases: 83 variedades de papas nativas
 Exactitud Global (Top-1 Accuracy): 83.14%
 Exactitud Global (Top-3 Accuracy): 95.38%
 Exactitud Global (Top-5 Accuracy): 97.94%
+
+=== CALIBRACIÓN DE PROBABILIDADES ===
+  * Modelo Base (Sin Calibrar, T = 1.0):
+    - Brier Score: 0.2528
+    - ECE (Expected Calibration Error): 5.84%
+  * Modelo Calibrado (Temperature Scaling, T = 2.0):
+    - Brier Score: 0.2605
+    - ECE (Expected Calibration Error): 7.50%
 
 === REPORTE DE CLASIFICACIÓN COMPLETO ===
               precision    recall  f1-score   support

@@ -36,6 +36,52 @@ LABEL_MAP_PKL = Path("label_map.pkl")
 REPORT_TXT = Path("reporte_evaluacion.txt")
 CONF_MATRIX_PNG = Path("matriz_confusion.png")
 
+def expected_calibration_error(y_true, y_prob, n_bins=10):
+    """
+    Calcula el Expected Calibration Error (ECE) para clasificación multiclase.
+    """
+    y_pred = np.argmax(y_prob, axis=1)
+    confidences = np.max(y_prob, axis=1)
+    
+    ece = 0.0
+    n_samples = len(y_true)
+    
+    for b in range(n_bins):
+        bin_lower = b / n_bins
+        bin_upper = (b + 1) / n_bins
+        
+        # Muestras cuyo nivel de confianza cae dentro del bin actual
+        in_bin = (confidences > bin_lower) & (confidences <= bin_upper)
+        prop_in_bin = np.mean(in_bin)
+        
+        if prop_in_bin > 0:
+            accuracy_in_bin = np.mean(y_true[in_bin] == y_pred[in_bin])
+            avg_confidence_in_bin = np.mean(confidences[in_bin])
+            ece += prop_in_bin * np.abs(avg_confidence_in_bin - accuracy_in_bin)
+            
+    return ece
+
+def calcular_brier_score_multiclase(y_true, y_prob):
+    """
+    Calcula el Brier Score multiclase.
+    """
+    n_samples, n_classes = y_prob.shape
+    y_true_onehot = np.zeros((n_samples, n_classes))
+    y_true_onehot[np.arange(n_samples), y_true] = 1
+    return np.mean(np.sum((y_prob - y_true_onehot) ** 2, axis=1))
+
+def aplicar_temperature_scaling(y_prob, T=2.0):
+    """
+    Aplica Temperature Scaling sobre las probabilidades.
+    """
+    eps = 1e-15
+    logits = np.log(y_prob + eps)
+    logits_scaled = logits / T
+    # Softmax estable
+    exp_logits = np.exp(logits_scaled - np.max(logits_scaled, axis=1, keepdims=True))
+    prob_scaled = exp_logits / np.sum(exp_logits, axis=1, keepdims=True)
+    return prob_scaled
+
 def main():
     print("=" * 80)
     print(" INICIANDO EVALUACIÓN COMPLETA DEL MODELO MLP ".center(80, "="))
@@ -71,10 +117,20 @@ def main():
     y_pred = modelo.predict(X_test)
     y_prob = modelo.predict_proba(X_test)
     
+    # Calibrar probabilidades con T=2.0
+    y_prob_calib = aplicar_temperature_scaling(y_prob, T=2.0)
+    
     # 4. Calcular métricas globales
     top1 = accuracy_score(y_test, y_pred)
     top3 = top_k_accuracy_score(y_test, y_prob, k=3)
     top5 = top_k_accuracy_score(y_test, y_prob, k=5)
+    
+    # Calcular métricas de calibración antes y después
+    brier_base = calcular_brier_score_multiclase(y_test, y_prob)
+    ece_base = expected_calibration_error(y_test, y_prob)
+    
+    brier_calib = calcular_brier_score_multiclase(y_test, y_prob_calib)
+    ece_calib = expected_calibration_error(y_test, y_prob_calib)
     
     print("\n" + "-" * 50)
     print(" MÉTRICAS DE EXACTITUD GLOBALES ".center(50, "-"))
@@ -82,6 +138,16 @@ def main():
     print(f"  - Accuracy Top-1: {top1 * 100:.2f}%")
     print(f"  - Accuracy Top-3: {top3 * 100:.2f}%")
     print(f"  - Accuracy Top-5: {top5 * 100:.2f}%")
+    
+    print("\n" + "-" * 50)
+    print(" EVALUACIÓN DE CALIBRACIÓN DE PROBABILIDADES ".center(50, "-"))
+    print("-" * 50)
+    print(f"  * Sin Calibrar (T = 1.0):")
+    print(f"    - Brier Score: {brier_base:.4f} (Menor es mejor)")
+    print(f"    - ECE (Expected Calibration Error): {ece_base * 100:.2f}% (Menor es mejor)")
+    print(f"  * Calibrado con Temperature Scaling (T = 2.0):")
+    print(f"    - Brier Score: {brier_calib:.4f} (Menor es mejor)")
+    print(f"    - ECE (Expected Calibration Error): {ece_calib * 100:.2f}% (Menor es mejor)")
     
     # 5. Reporte por clase
     report_dict = classification_report(y_test, y_pred, target_names=label_names, output_dict=True)
@@ -177,6 +243,14 @@ def main():
         f.write(f"Exactitud Global (Top-1 Accuracy): {top1 * 100:.2f}%\n")
         f.write(f"Exactitud Global (Top-3 Accuracy): {top3 * 100:.2f}%\n")
         f.write(f"Exactitud Global (Top-5 Accuracy): {top5 * 100:.2f}%\n\n")
+        
+        f.write("=== CALIBRACIÓN DE PROBABILIDADES ===\n")
+        f.write(f"  * Modelo Base (Sin Calibrar, T = 1.0):\n")
+        f.write(f"    - Brier Score: {brier_base:.4f}\n")
+        f.write(f"    - ECE (Expected Calibration Error): {ece_base * 100:.2f}%\n")
+        f.write(f"  * Modelo Calibrado (Temperature Scaling, T = 2.0):\n")
+        f.write(f"    - Brier Score: {brier_calib:.4f}\n")
+        f.write(f"    - ECE (Expected Calibration Error): {ece_calib * 100:.2f}%\n\n")
         
         f.write("=== REPORTE DE CLASIFICACIÓN COMPLETO ===\n")
         f.write(report_text)

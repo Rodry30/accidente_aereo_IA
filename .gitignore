@@ -1,0 +1,51 @@
+# ==============================================================================
+# ARCHIVOS A IGNORAR EN EL REPOSITORIO DE INTELIGENCIA ARTIFICIAL
+# ==============================================================================
+
+# 1. Modelos entrenados y serializados pesados (Exceden límites de GitHub)
+*.pkl
+*.pkl.z
+*.joblib
+*.keras
+*.h5
+*.pb
+*.onnx
+
+# 2. Entornos virtuales de Python
+.pt/
+back/
+env/
+venv/
+.venv/
+ENV/
+env.bak/
+venv.bak/
+
+# 3. Datasets y carpetas de imágenes masivas
+**/dataset/
+**/dataset128x128/
+**/dataset_papas/
+
+# 4. Archivos tabulares y binarios procesados intermedios
+*.npz
+*.npy
+**/features.csv
+**/features_procesado.npz
+
+# 5. Gráficos de resultados y visualizaciones generadas
+*.png
+*.jpg
+*.jpeg
+reporte_evaluacion.txt
+reporte_evaluacion_rf.txt
+
+# 6. Metadatos de editores de código y del sistema
+.vscode/
+.idea/
+.ipynb_checkpoints/
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.DS_Store
+Thumbs.db
