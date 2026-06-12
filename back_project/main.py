@@ -24,7 +24,8 @@ app.add_middleware(
 
 # Montar la carpeta del dataset original como archivos estáticos
 from fastapi.staticfiles import StaticFiles
-DATASET_DIR = r"C:\Users\rodri\Documents\8vo ciclo\Inteligencia Artificial\accidente_aereo_IA\Entrenamiento_papas\dataset\dataset128x128"
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+DATASET_DIR = os.path.join(BASE_DIR, "Entrenamiento_papas", "dataset", "dataset128x128")
 if os.path.exists(DATASET_DIR):
     app.mount("/dataset", StaticFiles(directory=DATASET_DIR), name="dataset")
     print(f"[INFO] Carpeta del dataset montada en /dataset desde: {DATASET_DIR}")
