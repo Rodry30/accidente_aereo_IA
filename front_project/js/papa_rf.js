@@ -140,7 +140,7 @@ function mostrarResultado(data) {
     row.className = 'top5-row';
     row.innerHTML = `
       <div class="top5-info">
-        <span class="top5-name">${index + 1}. Variedad ${item.variedad}</span>
+        <span class="top5-name">${index + 1}. ${item.variedad}</span>
         <span class="top5-val">${probPorc}%</span>
       </div>
       <div class="top5-bar-wrap">

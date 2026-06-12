@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Papa Classifier RF — Random Forest</title>
+  <title>Papa Classifier RF — Grupo de Color (Random Forest)</title>
   <link rel="stylesheet" href="css/styles.css"/>
   <style>
     /* Estilos específicos para Drag & Drop e interfaz de papas */
@@ -229,8 +229,8 @@
   <main class="container animated">
     <header style="margin-bottom: 30px;">
       <span class="badge badge-warning">Ensemble Estimator — Random Forest Classifier</span>
-      <h1 style="margin-top: 10px;">Clasificador de Papas Nativas</h1>
-      <p class="subtitle">Sube una fotografía de una papa nativa peruana. Nuestro modelo optimizado de Random Forest (300 árboles de decisión) evaluará las 45 características tabulares para clasificarla con alta precisión basándose en métricas del estimador OOB (Out-of-Bag).</p>
+      <h1 style="margin-top: 10px;">Clasificador de Color de Papas</h1>
+      <p class="subtitle">Sube una fotografía de una papa nativa peruana. Nuestro modelo optimizado de Random Forest (300 estimadores) evaluará 21 características visuales (promedio RGB/HSV, desviación estándar, histograma y textura) para clasificarla en uno de los 5 grupos de color del reporte.</p>
     </header>
 
     <!-- Subidor de imágenes -->
@@ -277,7 +277,7 @@
       <!-- Detalle de la Predicción Principal -->
       <div style="background: rgba(16, 185, 129, 0.08); border: 1px solid rgba(16, 185, 129, 0.25); padding: 20px 24px; border-radius: var(--radius); display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 16px;">
         <div>
-          <span style="font-size: 11px; font-weight: 700; color: var(--color-accent); text-transform: uppercase; letter-spacing: 0.5px;">Variedad Predicha</span>
+          <span style="font-size: 11px; font-weight: 700; color: var(--color-accent); text-transform: uppercase; letter-spacing: 0.5px;">Grupo de Color Predicho</span>
           <h3 style="font-size: 36px; margin: 0; color: var(--color-text); font-family: var(--font-display);" id="resVariety">--</h3>
         </div>
         <div style="text-align: right;">
@@ -306,7 +306,7 @@
 
       <!-- Top 5 Variedades Más Probables -->
       <div style="margin-top: 36px; border-top: 1px solid var(--color-border); padding-top: 24px;">
-        <h3 style="font-size: 20px; color: var(--color-primary); margin-bottom: 18px;">Top 5 Variedades Más Probables</h3>
+        <h3 style="font-size: 20px; color: var(--color-primary); margin-bottom: 18px;">Top 5 Grupos de Color Más Probables</h3>
         <div class="top5-container" id="top5Container">
           <!-- Se inyecta dinámicamente con JS -->
         </div>

@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Papa Classifier MLP — Redes Neuronales</title>
+  <title>Papa Classifier MLP — Grupo de Color (Redes Neuronales)</title>
   <link rel="stylesheet" href="css/styles.css"/>
   <style>
     /* Estilos específicos para Drag & Drop e interfaz de papas */
@@ -229,8 +229,8 @@
   <main class="container animated">
     <header style="margin-bottom: 30px;">
       <span class="badge badge-primary">Multilayer Perceptron — MLP Classifier</span>
-      <h1 style="margin-top: 10px;">Clasificador de Papas Nativas</h1>
-      <p class="subtitle">Sube una fotografía de una papa nativa peruana. Nuestra red neuronal artificial (MLP de 3 capas) analizará 45 variables de color, textura y forma para clasificarla entre 83 variedades distintas.</p>
+      <h1 style="margin-top: 10px;">Clasificador de Color de Papas</h1>
+      <p class="subtitle">Sube una fotografía de una papa nativa peruana. Nuestra red neuronal artificial (MLP de 3 capas) analizará 22 características visuales (promedio RGB/HSV, desviación estándar, histograma, textura y entropía) para clasificarla en uno de los 5 grupos de color del reporte.</p>
     </header>
 
     <!-- Subidor de imágenes -->
@@ -273,7 +273,7 @@
 
       <!-- Acciones del Formulario -->
       <div style="display: flex; gap: 12px; border-top: 1px solid var(--color-border); margin-top: 24px; padding-top: 24px;">
-        <button class="btn btn-primary" id="btnClassify" onclick="clasificarPapa()" style="flex: 1;" disabled>Clasificar Papa Nativa</button>
+        <button class="btn btn-primary" id="btnClassify" onclick="clasificarPapa()" style="flex: 1;" disabled>Clasificar con Red Neuronal MLP</button>
         <button class="btn btn-secondary" id="btnClear" onclick="clearForm()">Limpiar Imagen</button>
       </div>
 
@@ -288,12 +288,12 @@
 
     <!-- Resultados -->
     <div class="card result-card" id="resultCard">
-      <h2 style="font-size: 24px; margin-bottom: 12px; color: var(--color-primary);">Clasificación Exitosa</h2>
+      <h2 style="font-size: 24px; margin-bottom: 12px; color: var(--color-primary);">Clasificación Exitosa (Red Neuronal MLP)</h2>
       
       <!-- Detalle de la Predicción Principal -->
       <div style="background: rgba(16, 185, 129, 0.08); border: 1px solid rgba(16, 185, 129, 0.25); padding: 20px 24px; border-radius: var(--radius); display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 16px;">
         <div>
-          <span style="font-size: 11px; font-weight: 700; color: var(--color-accent); text-transform: uppercase; letter-spacing: 0.5px;">Variedad Predicha</span>
+          <span style="font-size: 11px; font-weight: 700; color: var(--color-accent); text-transform: uppercase; letter-spacing: 0.5px;">Grupo de Color Predicho</span>
           <h3 style="font-size: 36px; margin: 0; color: var(--color-text); font-family: var(--font-display);" id="resVariety">--</h3>
         </div>
         <div style="text-align: right;">
@@ -320,9 +320,9 @@
         </div>
       </div>
 
-      <!-- Top 5 Variedades Más Probables -->
+      <!-- Top 5 Grupos de Color Más Probables -->
       <div style="margin-top: 36px; border-top: 1px solid var(--color-border); padding-top: 24px;">
-        <h3 style="font-size: 20px; color: var(--color-primary); margin-bottom: 18px;">Top 5 Variedades Más Probables</h3>
+        <h3 style="font-size: 20px; color: var(--color-primary); margin-bottom: 18px;">Top 5 Grupos de Color Más Probables</h3>
         <div class="top5-container" id="top5Container">
           <!-- Se inyecta dinámicamente con JS -->
         </div>

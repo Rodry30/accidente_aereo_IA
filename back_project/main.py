@@ -4,6 +4,7 @@ from pydantic import BaseModel
 import tensorflow as tf
 import numpy as np
 import pandas as pd
+import cv2
 import subprocess
 import os
 import io
@@ -41,26 +42,53 @@ accidente_model_path = os.path.join(MODEL_DIR, "test.keras")
 model = tf.keras.models.load_model(accidente_model_path)
 print("[INFO] Modelo de Accidente Aéreo cargado exitosamente.")
 
-# 2. Cargar modelos de Papas Nativas (scikit-learn MLP y RF)
+# 2. Cargar modelos de Papas Nativas (Keras MLP y RF para clasificación de Colores)
 try:
-    modelo_mlp = joblib.load(os.path.join(MODEL_DIR, "modelo_mlp.pkl"))
-    scaler_mlp = joblib.load(os.path.join(MODEL_DIR, "scaler_mlp.pkl"))
-    label_map_mlp = joblib.load(os.path.join(MODEL_DIR, "label_map_mlp.pkl"))
+    modelo_mlp = tf.keras.models.load_model(os.path.join(MODEL_DIR, "modelo_mlp_colores.keras"))
+    scaler_mlp = joblib.load(os.path.join(MODEL_DIR, "scaler_mlp_colores.pkl"))
+    label_encoder_mlp = joblib.load(os.path.join(MODEL_DIR, "label_encoder_mlp_colores.pkl"))
     papas_mlp_loaded = True
-    print("[INFO] Modelo de Papas Nativas MLP cargado exitosamente.")
+    print("[INFO] Modelo de Papas Nativas MLP (Colores) cargado exitosamente.")
 except Exception as e:
     print(f"[ERROR] No se pudo cargar el modelo MLP de papas: {e}")
     papas_mlp_loaded = False
 
 try:
-    modelo_rf = joblib.load(os.path.join(MODEL_DIR, "modelo_rf.pkl"))
-    scaler_rf = joblib.load(os.path.join(MODEL_DIR, "scaler_rf.pkl"))
-    label_map_rf = joblib.load(os.path.join(MODEL_DIR, "label_map_rf.pkl"))
+    modelo_rf = joblib.load(os.path.join(MODEL_DIR, "modelo_rf_colores.pkl"))
+    scaler_rf = joblib.load(os.path.join(MODEL_DIR, "scaler_rf_colores.pkl"))
+    label_encoder_rf = joblib.load(os.path.join(MODEL_DIR, "label_encoder_rf_colores.pkl"))
     papas_rf_loaded = True
-    print("[INFO] Modelo de Papas Nativas Random Forest cargado exitosamente.")
+    print("[INFO] Modelo de Papas Nativas Random Forest (Colores) cargado exitosamente.")
 except Exception as e:
     print(f"[ERROR] No se pudo cargar el modelo RF de papas: {e}")
     papas_rf_loaded = False
+
+# 3. Cargar el mapeo de color a lista de variedades para la selección de imágenes de ejemplo
+MAPEO_CSV_PATH = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "Entrenamiento_papas", "Clasificacion_papas", "mapeo_variedades_colores.csv")
+COLOR_TO_VARIETIES = {}
+try:
+    if os.path.exists(MAPEO_CSV_PATH):
+        df_mapeo = pd.read_csv(MAPEO_CSV_PATH)
+        cluster_to_label = {
+            0: "Naranja brillante - tipo1",
+            1: "Azul/Morado",
+            2: "Naranja brillante - tipo2",
+            3: "Naranja brillante - tipo3",
+            4: "Amarillo suave"
+        }
+        for _, row in df_mapeo.iterrows():
+            var = str(row['variedad']).strip()
+            c_id = int(row['cluster'])
+            lbl = cluster_to_label.get(c_id)
+            if lbl:
+                if lbl not in COLOR_TO_VARIETIES:
+                    COLOR_TO_VARIETIES[lbl] = []
+                COLOR_TO_VARIETIES[lbl].append(var)
+        print(f"[INFO] Mapeo de colores a variedades cargado exitosamente: {list(COLOR_TO_VARIETIES.keys())}")
+    else:
+        print(f"[WARNING] No se encontró el archivo de mapeo en: {MAPEO_CSV_PATH}")
+except Exception as e:
+    print(f"[ERROR] Error al cargar mapeo de colores: {e}")
 
 IMG_SIZE_PAPA = (128, 128)
 
@@ -270,6 +298,83 @@ def aplicar_temperature_scaling(probabilidades: np.ndarray, T: float = 2.0) -> n
     probabilidades_calibradas = exp_logits / np.sum(exp_logits)
     return probabilidades_calibradas
 
+def extraer_caracteristicas_colores(img_pil: Image.Image, incluir_entropia: bool = False) -> np.ndarray:
+    """
+    Extrae características visuales específicas de colores y texturas de una imagen PIL.
+    Filtra el fondo blanco para mayor precisión.
+    """
+    img_rgb = np.array(img_pil.convert("RGB"))
+    
+    # Máscara para ignorar fondo blanco (RGB > 240)
+    mask = ~((img_rgb[:, :, 0] > 240) & 
+             (img_rgb[:, :, 1] > 240) & 
+             (img_rgb[:, :, 2] > 240))
+    
+    if not np.any(mask):
+        mask = np.ones(img_rgb.shape[:2], dtype=bool)
+        
+    pixels_rgb = img_rgb[mask]
+    if len(pixels_rgb) == 0:
+        raise ValueError("La imagen está vacía o contiene únicamente fondo blanco.")
+        
+    # 1. Promedio RGB
+    rgb_mean = pixels_rgb.mean(axis=0)
+    
+    # 2. Desviación Estándar RGB
+    rgb_std = pixels_rgb.std(axis=0)
+    
+    # 3. Promedio HSV
+    img_hsv = cv2.cvtColor(img_rgb, cv2.COLOR_RGB2HSV)
+    pixels_hsv = img_hsv[mask]
+    hsv_mean = pixels_hsv.mean(axis=0)
+    
+    # 4. Escala de grises para histograma y texturas
+    img_gray = cv2.cvtColor(img_rgb, cv2.COLOR_RGB2GRAY)
+    pixels_gray = img_gray[mask]
+    
+    # Histograma de intensidad normalizado (10 bins)
+    hist, _ = np.histogram(pixels_gray, bins=10, range=(0, 256))
+    hist = hist.astype(float)
+    hist_sum = hist.sum()
+    if hist_sum > 0:
+        hist /= hist_sum
+        
+    # Varianza
+    intensity_variance = pixels_gray.var()
+    
+    # Sobel
+    sobel_x = cv2.Sobel(img_gray, cv2.CV_64F, 1, 0, ksize=3)
+    sobel_y = cv2.Sobel(img_gray, cv2.CV_64F, 0, 1, ksize=3)
+    sobel_magnitude = np.sqrt(sobel_x**2 + sobel_y**2)
+    edge_mean = sobel_magnitude[mask].mean()
+    
+    if incluir_entropia:
+        # Entropía de Shannon del área enmascarada
+        _, counts = np.unique(pixels_gray, return_counts=True)
+        probabilities = counts / counts.sum()
+        entropy = -np.sum(probabilities * np.log2(probabilities + 1e-10))
+        
+        vector_features = np.hstack([
+            rgb_mean,            # 3
+            rgb_std,             # 3
+            hsv_mean,            # 3
+            intensity_variance,   # 1
+            edge_mean,           # 1
+            entropy,             # 1
+            hist                 # 10
+        ])
+    else:
+        vector_features = np.hstack([
+            rgb_mean,           # 3
+            rgb_std,            # 3
+            hsv_mean,           # 3
+            intensity_variance, # 1
+            edge_mean,          # 1
+            hist                # 10
+        ])
+        
+    return vector_features
+
 @app.post("/predecir_papa")
 async def predecir_papa(
     file: UploadFile = File(...),
@@ -278,9 +383,9 @@ async def predecir_papa(
 ):
     # Validar que los modelos estén cargados
     if modelo_tipo == "mlp" and not papas_mlp_loaded:
-        raise HTTPException(status_code=503, detail="El modelo MLP de papas nativas no está disponible.")
+        raise HTTPException(status_code=503, detail="El modelo MLP de papas nativas (Colores) no está disponible.")
     if modelo_tipo == "rf" and not papas_rf_loaded:
-        raise HTTPException(status_code=503, detail="El modelo Random Forest de papas nativas no está disponible.")
+        raise HTTPException(status_code=503, detail="El modelo Random Forest de papas nativas (Colores) no está disponible.")
         
     try:
         contents = await file.read()
@@ -289,57 +394,56 @@ async def predecir_papa(
         raise HTTPException(status_code=400, detail=f"El archivo subido no pudo leerse como imagen: {e}")
         
     try:
-        # Extraer características
-        features = extraer_caracteristicas_de_pil(img_pil)
-        df = pd.DataFrame([features])
-        
-        # Seleccionar modelo
+        # Extraer características según el tipo de modelo (MLP tiene 22 características, RF tiene 21)
         if modelo_tipo == "mlp":
+            features = extraer_caracteristicas_colores(img_pil, incluir_entropia=True)
             clf = modelo_mlp
             scl = scaler_mlp
-            lbl_map = label_map_mlp
+            le = label_encoder_mlp
         else:
+            features = extraer_caracteristicas_colores(img_pil, incluir_entropia=False)
             clf = modelo_rf
             scl = scaler_rf
-            lbl_map = label_map_rf
-            
-        # Alinear columnas con scaler
-        if hasattr(scl, "feature_names_in_"):
-            df = df[list(scl.feature_names_in_)]
+            le = label_encoder_rf
             
         # Escalar
-        X_scaled = scl.transform(df)
+        X_scaled = scl.transform(features.reshape(1, -1))
         
         # Predicción probabilística
-        probabilidades = clf.predict_proba(X_scaled)[0]
+        if modelo_tipo == "mlp":
+            probabilidades = clf.predict(X_scaled, verbose=0)[0]
+        else:
+            probabilidades = clf.predict_proba(X_scaled)[0]
         
         # Aplicar calibración mediante Temperature Scaling si es MLP
         if modelo_tipo == "mlp":
             probabilidades = aplicar_temperature_scaling(probabilidades, temperatura)
             
         pred_class_id = np.argmax(probabilidades)
-        
-        clase_predicha = lbl_map[pred_class_id]
+        clase_predicha = le.inverse_transform([pred_class_id])[0]
         confianza = probabilidades[pred_class_id]
         
-        # Obtener Top 5 más probables
+        # Obtener Top 5 más probables (en este caso coincidirá con todas las clases de color ordenadas)
         top5_indices = np.argsort(probabilidades)[-5:][::-1]
         top5_probabilidades = []
         for idx in top5_indices:
             top5_probabilidades.append({
-                "variedad": lbl_map[idx],
+                "variedad": le.inverse_transform([idx])[0],
                 "probabilidad": round(float(probabilidades[idx]), 4)
             })
             
-        # Buscar una imagen de ejemplo física para la variedad predicha
+        # Buscar una imagen física de ejemplo de alguna variedad que pertenezca al color predicho
         imagen_ejemplo_url = None
-        if os.path.exists(DATASET_DIR):
-            folder_path = os.path.join(DATASET_DIR, clase_predicha)
-            if os.path.exists(folder_path):
-                files = [f for f in os.listdir(folder_path) if f.lower().endswith(('.png', '.jpg', '.jpeg'))]
-                if files:
-                    # Retornar la ruta relativa servida por FastAPI
-                    imagen_ejemplo_url = f"http://127.0.0.1:8000/dataset/{clase_predicha}/{files[0]}"
+        if clase_predicha in COLOR_TO_VARIETIES and os.path.exists(DATASET_DIR):
+            # Recorrer las variedades pertenecientes a este color
+            for var_name in COLOR_TO_VARIETIES[clase_predicha]:
+                folder_path = os.path.join(DATASET_DIR, var_name)
+                if os.path.exists(folder_path):
+                    files = [f for f in os.listdir(folder_path) if f.lower().endswith(('.png', '.jpg', '.jpeg'))]
+                    if files:
+                        # Retornar el primer ejemplo encontrado
+                        imagen_ejemplo_url = f"http://127.0.0.1:8000/dataset/{var_name}/{files[0]}"
+                        break
             
         return {
             "variedad_predicha": clase_predicha,
