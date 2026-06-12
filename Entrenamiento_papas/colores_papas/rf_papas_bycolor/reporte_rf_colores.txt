@@ -1,0 +1,58 @@
+================================================================================
+REPORTE DETALLADO DE CLASIFICACIÓN DE PAPAS POR GRUPO DE COLOR
+MODELO: RANDOM FOREST CLASSIFIER
+================================================================================
+Fecha: 2026-06-12 (Local Time)
+Dataset de origen: dataset128x128
+Mapeo de referencia: mapeo_variedades_colores.csv
+--------------------------------------------------------------------------------
+CONFIGURACIÓN DEL MODELO:
+  - Clasificador: RandomForestClassifier
+  - Estimadores (n_estimators): 300
+  - Semilla aleatoria (random_state): 42
+  - Pesos de clase (class_weight): balanced
+  - División del conjunto (train/test): 80% / 20% (Estratificado)
+--------------------------------------------------------------------------------
+RESUMEN DE DATOS:
+  - Total muestras procesadas: 4863
+  - Muestras de entrenamiento: 3890
+  - Muestras de prueba: 973
+  - Número de clases: 5
+    * Naranja brillante - tipo1: 1464 imágenes
+    * Naranja brillante - tipo2: 1257 imágenes
+    * Naranja brillante - tipo3: 1216 imágenes
+    * Amarillo suave: 777 imágenes
+    * Azul/Morado: 149 imágenes
+--------------------------------------------------------------------------------
+MÉTRICAS DEL CONJUNTO DE PRUEBA:
+  - Exactitud (Accuracy): 0.842754 (84.28%)
+  - F1-Score Macro: 0.831040
+
+Reporte de Clasificación:
+                           precision    recall  f1-score   support
+
+           Amarillo suave       0.81      0.88      0.84       155
+              Azul/Morado       0.88      0.70      0.78        30
+Naranja brillante - tipo1       0.85      0.84      0.85       293
+Naranja brillante - tipo2       0.86      0.83      0.84       252
+Naranja brillante - tipo3       0.84      0.85      0.84       243
+
+                 accuracy                           0.84       973
+                macro avg       0.85      0.82      0.83       973
+             weighted avg       0.84      0.84      0.84       973
+
+--------------------------------------------------------------------------------
+MATRIZ DE CONFUSIÓN:
+[[137   2   5  11   0]
+ [  8  21   1   0   0]
+ [ 12   0 247   9  25]
+ [ 12   1  16 208  15]
+ [  1   0  21  14 207]]
+
+Etiquetas correspondientes:
+  [0]: Amarillo suave
+  [1]: Azul/Morado
+  [2]: Naranja brillante - tipo1
+  [3]: Naranja brillante - tipo2
+  [4]: Naranja brillante - tipo3
+================================================================================

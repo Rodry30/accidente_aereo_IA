@@ -1,0 +1,61 @@
+================================================================================
+REPORTE DETALLADO DE CLASIFICACIÓN DE PAPAS POR GRUPO DE COLOR
+MODELO: MULTI-LAYER PERCEPTRON (MLP)
+================================================================================
+Fecha: 2026-06-12 (Local Time)
+Dataset de origen: dataset128x128
+Mapeo de referencia: mapeo_variedades_colores.csv
+--------------------------------------------------------------------------------
+CONFIGURACIÓN DE LA RED NEURONAL:
+  - Capas Ocultas: 128 (ReLU), 64 (ReLU), 32 (ReLU)
+  - Capa de Salida: 5 (Softmax)
+  - Optimizador: Adam (learning_rate=0.001)
+  - Dropout: 0.2 (Capa 1), 0.1 (Capa 2)
+  - Pérdida (Loss): sparse_categorical_crossentropy
+  - Early Stopping: Activado (val_loss, patience=15)
+  - Pesos de clase: balanced (aplicado durante el fit)
+  - División del conjunto: 80% / 20% (Estratificado)
+--------------------------------------------------------------------------------
+RESUMEN DE DATOS:
+  - Total muestras procesadas: 4863
+  - Muestras de entrenamiento: 3890
+  - Muestras de prueba: 973
+  - Número de clases: 5
+    * Naranja brillante - tipo1: 1464 imágenes
+    * Naranja brillante - tipo2: 1257 imágenes
+    * Naranja brillante - tipo3: 1216 imágenes
+    * Amarillo suave: 777 imágenes
+    * Azul/Morado: 149 imágenes
+--------------------------------------------------------------------------------
+MÉTRICAS DEL CONJUNTO DE PRUEBA:
+  - Exactitud (Accuracy): 0.855087 (85.51%)
+  - F1-Score Macro: 0.855525
+
+Reporte de Clasificación:
+                           precision    recall  f1-score   support
+
+           Amarillo suave       0.77      0.92      0.84       155
+              Azul/Morado       0.87      0.87      0.87        30
+Naranja brillante - tipo1       0.88      0.86      0.87       293
+Naranja brillante - tipo2       0.88      0.78      0.83       252
+Naranja brillante - tipo3       0.87      0.88      0.88       243
+
+                 accuracy                           0.86       973
+                macro avg       0.85      0.86      0.86       973
+             weighted avg       0.86      0.86      0.85       973
+
+--------------------------------------------------------------------------------
+MATRIZ DE CONFUSIÓN:
+[[143   3   0   9   0]
+ [  3  26   1   0   0]
+ [ 11   0 252  12  18]
+ [ 29   1  12 197  13]
+ [  0   0  23   6 214]]
+
+Etiquetas correspondientes:
+  [0]: Amarillo suave
+  [1]: Azul/Morado
+  [2]: Naranja brillante - tipo1
+  [3]: Naranja brillante - tipo2
+  [4]: Naranja brillante - tipo3
+================================================================================

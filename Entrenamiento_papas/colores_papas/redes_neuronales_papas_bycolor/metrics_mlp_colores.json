@@ -1,0 +1,59 @@
+{
+    "total_muestras": 4863,
+    "samples_train": 3890,
+    "samples_test": 973,
+    "accuracy": 0.8550873586844809,
+    "f1_score_macro": 0.8555252992737875,
+    "clases": [
+        "Amarillo suave",
+        "Azul/Morado",
+        "Naranja brillante - tipo1",
+        "Naranja brillante - tipo2",
+        "Naranja brillante - tipo3"
+    ],
+    "classification_report": {
+        "Amarillo suave": {
+            "precision": 0.7688172043010753,
+            "recall": 0.9225806451612903,
+            "f1-score": 0.8387096774193549,
+            "support": 155.0
+        },
+        "Azul/Morado": {
+            "precision": 0.8666666666666667,
+            "recall": 0.8666666666666667,
+            "f1-score": 0.8666666666666667,
+            "support": 30.0
+        },
+        "Naranja brillante - tipo1": {
+            "precision": 0.875,
+            "recall": 0.8600682593856656,
+            "f1-score": 0.8674698795180723,
+            "support": 293.0
+        },
+        "Naranja brillante - tipo2": {
+            "precision": 0.8794642857142857,
+            "recall": 0.7817460317460317,
+            "f1-score": 0.8277310924369747,
+            "support": 252.0
+        },
+        "Naranja brillante - tipo3": {
+            "precision": 0.8734693877551021,
+            "recall": 0.8806584362139918,
+            "f1-score": 0.8770491803278688,
+            "support": 243.0
+        },
+        "accuracy": 0.8550873586844809,
+        "macro avg": {
+            "precision": 0.852683508887426,
+            "recall": 0.8623440078347292,
+            "f1-score": 0.8555252992737875,
+            "support": 973.0
+        },
+        "weighted avg": {
+            "precision": 0.85860198138865,
+            "recall": 0.8550873586844809,
+            "f1-score": 0.8549638857272199,
+            "support": 973.0
+        }
+    }
+}

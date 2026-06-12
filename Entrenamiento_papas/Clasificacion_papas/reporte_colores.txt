@@ -1,0 +1,44 @@
+============================================================
+REPORTE DE EXPLORACIÓN DE COLORES
+Dataset: papas-nativas-peru-83-variedades (dataset128x128)
+============================================================
+
+Total variedades analizadas: 83
+Número de grupos de color (K óptimo): 5
+
+DISTRIBUCIÓN POR GRUPO DE COLOR:
+----------------------------------------
+
+[Grupo 0] Naranja brillante - tipo1 — HEX: #77604C
+  Variedades: 25
+  HSV promedio: H=14.4, S=97.9, V=119.5
+  Carpetas: V11, V19, V2, V25, V27, V42, V48, V49, V51, V54, V56, V65, V66, V67, V68, V69, V7, V71, V72, V73, V77, V81, V83, V84, V9
+
+[Grupo 1] Azul/Morado — HEX: #544A48
+  Variedades: 3
+  HSV promedio: H=55.8, S=41.3, V=84.4
+  Carpetas: V17, V26, V58
+
+[Grupo 2] Naranja brillante - tipo2 — HEX: #58483C
+  Variedades: 22
+  HSV promedio: H=14.8, S=88.9, V=88.0
+  Carpetas: V1, V15, V20, V3, V30, V31, V32, V36, V4, V41, V46, V5, V52, V6, V60, V61, V62, V63, V79, V8, V80, V82
+
+[Grupo 3] Naranja brillante - tipo3 — HEX: #6D4F38
+  Variedades: 20
+  HSV promedio: H=13.4, S=130.7, V=109.1
+  Carpetas: V14, V21, V22, V23, V24, V29, V34, V35, V37, V38, V43, V44, V45, V47, V53, V59, V64, V70, V75, V76
+
+[Grupo 4] Amarillo suave — HEX: #65584F
+  Variedades: 13
+  HSV promedio: H=20.9, S=60.7, V=101.4
+  Carpetas: V10, V12, V13, V16, V18, V28, V33, V39, V40, V50, V55, V57, V78
+
+============================================================
+ARCHIVOS GENERADOS:
+  - elbow_method.png
+  - paleta_colores_variedades.png
+  - distribucion_grupos_color.png
+  - scatter_hsv_clusters.png
+  - mapeo_variedades_colores.csv
+============================================================

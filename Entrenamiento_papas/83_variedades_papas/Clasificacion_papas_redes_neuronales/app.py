@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 """
 Gradio Web App - Clasificación de Papas Nativas Peruanas
-Autor: Antigravity AI
 Descripción: Carga el modelo MLP, escalador y mapa de etiquetas entrenados localmente.
              Proporciona una interfaz web premium con Gradio Blocks para subir una foto
              de papa nativa andina y clasificarla instantáneamente en tiempo real.

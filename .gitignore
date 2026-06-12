@@ -31,6 +31,7 @@ venv.bak/
 *.npy
 **/features.csv
 **/features_procesado.npz
+**/resultados_*.csv
 
 # 5. Gráficos de resultados y visualizaciones generadas
 *.png
